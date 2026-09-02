@@ -1,0 +1,1133 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MIDOV Coffee — концепт сайта кофейни, Владикавказ</title>
+
+<!-- Служебная разметка для поиска и мессенджеров. Появилась вместе с
+     выкладкой на публичный адрес: страницу должно быть видно в выдаче,
+     а по ссылке в переписке обязано разворачиваться превью, а не голый
+     адрес. Всё, что здесь сказано, повторяет строку в подвале — это
+     концепт, а не сайт кофейни. Врать роботам тем же нельзя, чем нельзя
+     врать гостю (принцип I). -->
+<meta name="description" content="Демонстрационный сайт кофейни MIDOV: меню из семи разделов, шесть точек во Владикавказе и работающая корзина. Концепт, не официальный сайт кофейни.">
+<link rel="canonical" href="https://sarmtem-t7.github.io/midov-demo/">
+
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:url" content="https://sarmtem-t7.github.io/midov-demo/">
+<meta property="og:title" content="MIDOV Coffee — концепт сайта кофейни, Владикавказ">
+<meta property="og:description" content="Меню из семи разделов, шесть точек во Владикавказе и заказ, который собирается прямо на странице. Концепт, не официальный сайт кофейни.">
+<meta property="og:image" content="https://sarmtem-t7.github.io/midov-demo/assets/og-cover.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Фасад MIDOV COFFEE и гости за уличными столиками">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Oswald:wght@500;700&display=swap">
+
+<!-- Постер первого кадра грузим раньше всего: он появляется на экране
+     до того, как доиграет хоть один кадр видео, и решает, увидит гость
+     кофе или белый прямоугольник. -->
+<link rel="preload" as="image" href="assets/video/hero-splash-poster.webp">
+
+<!-- Стили первого экрана — здесь, внутри разметки, а не отдельным файлом.
+     Первый экран и есть вся страница на этом шаге, поэтому «некритических»
+     стилей у него нет: любой вынесенный кусок добавил бы блокирующий
+     запрос ровно перед первым кадром (принцип IV конституции). -->
+<style>
+:root {
+  --paper:    #EEECEC;
+  --ink:      #16130F;
+  --ink-soft: #6B5A47;
+  --ochre:    #C08A2C;
+  --hairline: rgba(22, 19, 15, .16);
+
+  --display: 'Oswald', 'Haettenschweiler', 'Arial Narrow', sans-serif;
+  --body:    'Golos Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper:    #131313;
+    --ink:      #F2E8D7;
+    --ink-soft: #A2907A;
+    --ochre:    #E2A93E;
+    --hairline: rgba(242, 232, 215, .18);
+  }
+}
+:root[data-theme="dark"] {
+  --paper:    #131313;
+  --ink:      #F2E8D7;
+  --ink-soft: #A2907A;
+  --ochre:    #E2A93E;
+  --hairline: rgba(242, 232, 215, .18);
+}
+
+* { box-sizing: border-box; }
+
+/* Атрибут hidden задаёт display:none лишь в стилях браузера, и любое
+   авторское display его перебивает. У .status стоит inline-flex, поэтому
+   скрытый статус оставался видимым — а это показ выдуманных часов там,
+   где их нет. Правило возвращает hidden силу над всей страницей. */
+[hidden] { display: none !important; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--body);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+:focus-visible { outline: 2px solid var(--ochre); outline-offset: 4px; border-radius: 2px; }
+
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(14px, 2.2vw, 26px) clamp(16px, 3.2vw, 44px) clamp(18px, 2.6vw, 32px);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* ── Сцена ───────────────────────────────────────────────
+   Ролик снят на холодном сером фоне, а страница кремовая.
+   Умножение на цвет бумаги сажает белое видео ровно в тон
+   страницы: белое становится кремовым, кофе остаётся кофе.
+   Края растворяем маской — иначе виден прямоугольник и
+   виньетка по его углам. */
+
+.scene {
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.scene--back { z-index: 1; }
+
+/* Тот же кадр вторым слоем НАД заголовком, с окном по стакану.
+   Пиксели те же и совмещены точка в точку, поэтому шва нет:
+   меняется только то, что внутри окна текст уходит за предмет.
+   Из-за этого сцена и текст перестают быть двумя слоями. */
+.scene--front {
+  z-index: 7;
+  -webkit-mask-image: radial-gradient(ellipse 19% 40% at 51% 60%, #000 74%, transparent 92%);
+          mask-image: radial-gradient(ellipse 19% 40% at 51% 60%, #000 74%, transparent 92%);
+}
+
+.scene video,
+.scene img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Кадр сдвинут вниз: сверху остаётся чистая полоса фона,
+     на которой держится заголовок. Цвет и свет не трогаем —
+     ролик идёт ровно таким, каким снят. */
+  object-position: center 68%;
+}
+
+
+
+/* Засветка бумагой сверху и снизу. Кадр занят почти целиком,
+   и без неё шапка с заголовком тонут в кофе. Уменьшать сцену
+   нельзя — в ней вся суть, поэтому отвоёвываем полосы светом.
+
+   Полосы доведены до строк, которые на них стоят. Прежние держали
+   контраст, пока внизу кадра оставался спокойный фон; на нынешнем
+   ролике под строку рейтинга приходит светлый всплеск, и она пропадала:
+   1,77 на светлой теме и ровно 1,00 на тёмной при норме 4,5 — то есть
+   цвет текста в цвет кофе. Строка адреса давала 2,00 и 2,20.
+
+   На узком экране это уже исправлено (см. медиазапрос ниже), там те же
+   цифры вышли за 5. Здесь — то же самое лекарство: солнце садится ниже,
+   а середина кадра, где и происходит всплеск, остаётся нетронутой. */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom,
+      var(--paper) 0%,
+      var(--paper) 15%,
+      color-mix(in srgb, var(--paper) 74%, transparent) 21%,
+      color-mix(in srgb, var(--paper) 28%, transparent) 30%,
+      transparent 39%),
+    linear-gradient(to top,
+      var(--paper) 0%,
+      var(--paper) 11%,
+      color-mix(in srgb, var(--paper) 62%, transparent) 18%,
+      color-mix(in srgb, var(--paper) 24%, transparent) 26%,
+      transparent 34%);
+}
+
+/* Бумажное зерно поверх всего. */
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  pointer-events: none;
+  opacity: .42;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E");
+}
+
+/* ── Шапка ───────────────────────────────────────────────── */
+
+.nav {
+  position: relative;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+}
+.nav__left, .nav__right { display: flex; align-items: center; gap: clamp(10px, 1.6vw, 26px); }
+.nav__right { justify-content: flex-end; }
+
+.pill {
+  display: inline-flex; align-items: center; gap: 9px;
+  min-height: 40px; padding: 0 18px;
+  border: 1px solid var(--hairline); border-radius: 999px;
+  /* font-family обязателен: <button> его не наследует, и кнопка корзины
+     съезжала на системный Arial рядом со ссылками на Golos Text. */
+  font-family: var(--body);
+  font-size: 11.5px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ink); text-decoration: none; background: transparent; cursor: pointer;
+  transition: background-color .25s ease, border-color .25s ease, color .25s ease;
+}
+.pill:hover { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+
+.pill__count {
+  display: grid; place-items: center;
+  min-width: 19px; height: 19px; border-radius: 999px;
+  background: var(--ink); color: var(--paper);
+  font-size: 10.5px; font-variant-numeric: tabular-nums;
+  transition: background-color .25s ease, color .25s ease;
+}
+.pill:hover .pill__count { background: var(--paper); color: var(--ink); }
+
+.nav__link {
+  font-size: 11.5px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ink-soft); text-decoration: none; transition: color .2s ease;
+}
+.nav__link:hover { color: var(--ink); }
+
+.nav__mark {
+  font-family: var(--display); font-weight: 700;
+  font-size: clamp(15px, 1.6vw, 20px);
+  letter-spacing: .3em; text-indent: .3em; text-transform: uppercase;
+}
+
+/* ── Заголовок ───────────────────────────────────────────── */
+
+.stage {
+  position: relative;
+  z-index: 6;
+  display: flex; flex-direction: column; align-items: center;
+  padding-top: clamp(14px, 4.2vh, 50px);
+  pointer-events: none;
+}
+
+.eyebrow {
+  display: flex; align-items: center; gap: 12px;
+  margin: 0 0 clamp(10px, 1.8vh, 22px);
+  font-size: 11px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.eyebrow__sep { width: 1px; height: 11px; background: var(--hairline); }
+.status { display: inline-flex; align-items: center; gap: 7px; }
+.status__dot { width: 6px; height: 6px; border-radius: 999px; background: var(--ochre); }
+
+.type {
+  /* Слова разнесены по бокам от стакана: просвет между ними — это
+     он сам. Прежняя строка шла по центру, и стакан съедал её
+     середину; теперь съедать нечего, пауза задумана. */
+  /* Сетка, а не flex: два столбца по 1fr прижимают слова к просвету
+     с обеих сторон, поэтому сам просвет всегда ровно по центру кадра.
+     На flex он съезжал, потому что слова разной длины. */
+  display: grid;
+  grid-template-columns: 1fr clamp(150px, 25vw, 460px) 1fr;
+  align-items: baseline;
+  width: 100%;
+  margin: 0;
+  font-family: var(--display); font-weight: 700;
+  font-size: clamp(2.1rem, 7.4vw, 6.4rem);
+  line-height: .92; letter-spacing: -.004em;
+  text-transform: uppercase; text-align: center;
+}
+.type__word { display: block; overflow: hidden; padding: .11em 0 .13em; }
+.type__word:first-child { grid-column: 1; justify-self: end;   text-align: right; }
+.type__word:last-child  { grid-column: 3; justify-self: start; text-align: left;  }
+.type__inner { display: block; }
+
+/* ── Нижняя строка ───────────────────────────────────────── */
+
+.footline {
+  position: relative;
+  z-index: 6;
+  margin-top: auto;
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: clamp(16px, 4vw, 60px);
+}
+.proof { display: flex; align-items: center; gap: 14px; }
+.proof__score {
+  font-family: var(--display); font-weight: 700;
+  font-size: clamp(28px, 3.4vw, 46px); line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.proof__star { color: var(--ochre); }
+.proof__text { max-width: 21ch; font-size: 12.5px; line-height: 1.45; color: var(--ink-soft); }
+
+.cta {
+  display: inline-flex; align-items: center; gap: 16px;
+  min-height: 58px; padding: 0 12px 0 30px;
+  border: 1px solid var(--ink); border-radius: 999px;
+  font-size: 12.5px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--ink); text-decoration: none; white-space: nowrap;
+  background: color-mix(in srgb, var(--paper) 72%, transparent);
+  backdrop-filter: blur(3px);
+  transition: background-color .3s cubic-bezier(.22,1,.36,1), color .3s cubic-bezier(.22,1,.36,1);
+}
+.cta__arrow {
+  display: grid; place-items: center;
+  width: 36px; height: 36px; border-radius: 999px;
+  background: var(--ink); color: var(--paper);
+  transition: transform .35s cubic-bezier(.22,1,.36,1), background-color .3s ease, color .3s ease;
+}
+.cta:hover { background: var(--ink); color: var(--paper); }
+.cta:hover .cta__arrow { background: var(--paper); color: var(--ink); transform: rotate(45deg); }
+
+/* ── Появление ───────────────────────────────────────────── */
+
+.js .hero:not(.anim) .type__inner { transform: translateY(106%); }
+.js .hero:not(.anim) .nav,
+.js .hero:not(.anim) .eyebrow,
+.js .hero:not(.anim) .footline { opacity: 0; }
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Текст входит, пока всплеск ещё поднимается: сначала кадр,
+     потом слова — иначе они спорят за первую секунду. */
+  .anim .type__inner { animation: rise-text .95s cubic-bezier(.22,1,.36,1) both; }
+  .anim .type__word:nth-child(1) .type__inner { animation-delay: .70s; }
+  .anim .type__word:nth-child(2) .type__inner { animation-delay: .84s; }
+  .anim .nav,
+  .anim .eyebrow  { animation: fade-up .8s cubic-bezier(.22,1,.36,1) .35s both; }
+  .anim .footline { animation: fade-up .8s cubic-bezier(.22,1,.36,1) 1.9s both; }
+}
+
+@keyframes rise-text { from { transform: translateY(106%); } to { transform: none; } }
+@keyframes fade-up   { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+@media (max-width: 860px) { .nav__links { display: none; } }
+
+
+@media (max-width: 680px) {
+  /* На портретном экране кадр 16:9 заполняет высоту, и от всплеска
+     остаётся крупный план стакана: корона уходит за края. Так и надо —
+     первый экран должен быть сплошным, как на широком, а не полосой
+     с пустыми полями сверху и снизу.
+
+     Точка кадрирования поднята с 68% до 44%: при прежней низ кадра
+     забирала молочная лужа, а надпись на стакане уезжала под нижнюю
+     строку с рейтингом. */
+  .scene__video { object-position: center 44%; }
+
+  /* Строка рейтинга получает свою подложку — ровно тем же приёмом, каким
+     держится кнопка заказа. Без неё текст лежит прямо на всплеске, и
+     контраст падает до 1,80:1 при норме 4,5. Усиливать засветку дальше
+     нельзя: она вымоет сам всплеск, ради которого экран и сделан. */
+  .proof {
+    padding: 10px 14px;
+    border-radius: 16px;
+    /* Плотная, а не полупрозрачная: сквозь 82% всплеск всё равно
+       просвечивал и держал контраст на 3,16 вместо 4,5. */
+    background: var(--paper);
+  }
+
+  /* Вертикальный ролик доходит до самого низа кадра, и нижняя строка легла
+     прямо на всплеск: контраст упал до 1,80:1 при норме 4,5. Прежней
+     засветки хватало, когда внизу оставался чистый фон. Усиливаем её
+     на узком экране — ровно настолько, чтобы текст читался, не пряча
+     сам всплеск. */
+  .hero::before {
+    background:
+      /* Верхняя засветка доведена до места, где стоит строка адреса.
+         Прежней хватало на светлой теме и не хватало на тёмной: ролик
+         яркий, текст тоже светлый, и на полупрозрачной подложке
+         контраст падал до 2,39 при норме 4,5. */
+      linear-gradient(to bottom,
+        var(--paper) 0%,
+        var(--paper) 13%,
+        color-mix(in srgb, var(--paper) 82%, transparent) 20%,
+        color-mix(in srgb, var(--paper) 34%, transparent) 30%,
+        transparent 42%),
+      linear-gradient(to top,
+        var(--paper) 0%,
+        color-mix(in srgb, var(--paper) 92%, transparent) 12%,
+        color-mix(in srgb, var(--paper) 62%, transparent) 22%,
+        transparent 34%);
+  }
+
+  .footline { flex-direction: column; align-items: stretch; gap: 14px; }
+  .cta { justify-content: space-between; padding-right: 11px; }
+  .proof__text { max-width: none; }
+  .eyebrow { flex-wrap: wrap; justify-content: center; row-gap: 6px; }
+  /* Второй разделитель на узком экране лишний. Здесь был :last-of-type,
+     но соседи все span — он указывал на .status, и разделитель оставался
+     висеть в никуда после адреса. */
+  .eyebrow > .eyebrow__sep:nth-last-child(2) { display: none; }
+}
+
+/* Низкий экран: вертикали мало, сцена начинает задевать заголовок
+   и рейтинг — уводим её меньше и выше. */
+
+/* ── Выбор точки ─────────────────────────────────────────
+   Адрес в подзаголовке стоял один на всю сеть, хотя точек шесть и часы
+   у них разные: 08:30 у одних, 09:00 у других. Теперь это кнопка, и
+   выбор меняет разом адрес, часы и живой статус.
+
+   Два подвоха этого места. Первый: .stage не принимает указатель
+   (pointer-events: none), иначе сцена перестала бы ловить курсор —
+   значит кнопке право на нажатие надо вернуть поимённо. Второй: .stage
+   лежит на z-index 6, а над ним второй слой сцены (7) и зерно (9),
+   поэтому раскрытый список уехал бы под них. Поднимаем весь слой
+   заголовка только на время раскрытия. */
+/* Порядок слоёв внутри .stage задан явно. Полагаться на неявный нельзя:
+   у .type__inner остаётся transform после анимации появления, а это
+   собственный контекст наложения, и заголовок всплывал поверх списка. */
+.eyebrow { position: relative; z-index: 3; }
+.type    { position: relative; z-index: 1; }
+.picker  { position: relative; pointer-events: auto; }
+
+.picker__btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  min-height: 34px; margin: -6px -10px; padding: 0 10px;
+  border: 0; border-radius: 999px; background: transparent;
+  font: inherit; color: inherit; letter-spacing: inherit;
+  text-transform: inherit; cursor: pointer;
+  transition: background-color .2s ease, color .2s ease;
+}
+.picker__btn:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 7%, transparent); }
+.picker__caret { transition: transform .25s cubic-bezier(.22,1,.36,1); }
+.picker__btn[aria-expanded="true"] .picker__caret { transform: rotate(180deg); }
+
+/* Список — span, а не ul. Парсер HTML закрывает <p> при встрече <ul>,
+   и список вылетал из подзаголовка вместе со .picker: переставал
+   наследовать pointer-events и позиционировался от чужого предка.
+   В исходнике вложенность выглядела правильной, в дереве — нет. */
+.picker__list {
+  display: block;
+  position: absolute; top: calc(100% + 10px); left: 50%; translate: -50% 0;
+  z-index: 30; min-width: 240px; max-width: calc(100vw - 24px);
+  margin: 0; padding: 6px; list-style: none;
+  border: 1px solid var(--hairline); border-radius: 16px;
+  /* Плотный фон, а не полупрозрачный: список висит над всплеском и над
+     заголовком, и любая просвечивающая подложка делает адреса нечитаемыми.
+     Размытие оставлено как подстраховка по краям, но опираться на него
+     нельзя — без ускорителя оно не рисуется вовсе. */
+  background: var(--paper);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 18px 44px -18px rgba(0,0,0,.4);
+  text-transform: none; letter-spacing: 0;
+}
+.picker__list[hidden] { display: none; }
+
+.picker__opt {
+  display: flex; align-items: baseline; gap: 10px; width: 100%;
+  min-height: 44px; padding: 9px 12px;            /* 44px — цель нажатия */
+  border: 0; border-radius: 11px; background: transparent;
+  font-family: var(--body); font-size: 13px; color: var(--ink);
+  text-align: left; cursor: pointer;
+}
+.picker__opt:hover { background: color-mix(in srgb, var(--ink) 8%, transparent); }
+.picker__opt[aria-current="true"] { background: color-mix(in srgb, var(--ochre) 17%, transparent); }
+.picker__opt-addr { flex: 1; font-weight: 500; }
+/* Часы моноширинными цифрами: иначе строки списка дёргаются по вертикали. */
+.picker__opt-hours { font-size: 11.5px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.picker__opt-flag { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ochre); }
+
+/* Слой заголовка поднимается над сценой и зерном только пока список открыт. */
+.hero.picker-open .stage { z-index: 12; }
+
+@media (max-width: 680px) {
+  .picker__list { left: 0; translate: 0 0; }
+}
+
+/* Анимация после всплеска — тот самый ролик из Higgsfield, но развёрнутый
+   и замкнутый.
+
+   Развёрнутый: он начинается со 139-го кадра, а всплеск обрывается на
+   94-м из 97 — это лучшая пара из всех 97×144 сочетаний. Подбирать можно
+   обе точки сразу, а не только начало анимации: расхождение падает
+   с 9,0% пикселей до 2,5%. Хвоста всплеска теряется 0,12 секунды.
+
+   Замкнутый: ролик идёт вперёд, затем назад, поэтому его конец равен его
+   началу — 0,0%. Точки повтора, которую ловил глаз раз в шесть секунд,
+   больше нет вовсе.
+
+   Оставшиеся 6,9% закрывает наплыв. Он длинный и плавный намеренно: ролики
+   сняты порознь и точно совпасть не могут, а на почти осевшей жидкости
+   восьмая доля секунды на кадр читается как оседание, а не как склейка. */
+.scene__video { position: absolute; inset: 0; }
+
+/* Смена мгновенная, без наплыва.
+
+   Наплыв здесь был вреден по существу. Стакан в последнем кадре всплеска
+   и в первом кадре анимации стоит чуть по-разному, и пока оба слоя
+   полупрозрачны, видно ДВА стакана: двойной ободок, задвоенная надпись.
+   Никакая длительность это не лечит — наоборот, чем дольше наплыв, тем
+   дольше держится призрак.
+
+   Пара кадров подобрана по самому стакану, а не по кадру целиком: раньше
+   выбор перетягивал размытый фон всплеска, занимающий больше половины
+   площади. Всплеск обрывается на 94-м кадре из 97, анимация начинается
+   со 135-го — расхождение по стакану 2,14 против 2,92 у прежней пары.
+
+   Скачок при такой смене меньше, чем собственное движение ролика между
+   соседними кадрами, поэтому резкая склейка тише плавной. */
+.scene__video--splash { opacity: 1; }
+.scene__video--idle   { opacity: 0; }
+.scene.is-idle .scene__video--idle { opacity: 1; }
+.scene.is-idle .scene__video--idle { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .scene__video--idle { transition: none; }
+}
+
+
+/* Заголовок ушёл с экрана, но остался для голоса и поиска. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  margin: -1px; padding: 0; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+
+/* Автозапуск запрещён: показываем конечный кадр без движения. Постер
+   петли — это финал сцены, то есть уже собранная композиция, а не
+   первый кадр всплеска, на котором стакана ещё нет. */
+.scene.is-static .scene__video--idle {
+  background: var(--paper) center/cover no-repeat;
+}
+</style>
+
+<!-- Стили секций ниже первого экрана: меню, панель заказа, точки, подвал. -->
+<link rel="stylesheet" href="css/style.css">
+
+<!-- Маршрутизатор подключён здесь, а не в конце страницы, и это в нём
+     главное: он ставит вид (лендинг или меню) атрибутом на <html> до
+     того, как разобран <body>. Подключи его ниже — гость, пришедший по
+     ссылке сразу в меню, увидел бы вспышку лендинга. Он же не даёт
+     закачаться ролику первого экрана, если первый экран не показывается. -->
+<script src="js/router.js"></script>
+
+<script>document.documentElement.classList.add('js')</script>
+</head>
+<body>
+
+<div class="hero">
+
+  <div class="scene scene--back" aria-hidden="true">
+    <video class="scene__video scene__video--splash" poster="assets/video/hero-splash-poster.webp"
+           data-poster-v="assets/video/hero-v-poster.webp" muted autoplay playsinline preload="auto">
+      <source src="assets/video/hero-splash.mp4" data-src-v="assets/video/hero-loop-v.mp4" type="video/mp4">
+    </video>
+    <video class="scene__video scene__video--idle" poster="assets/video/hero-idle-poster.webp"
+           data-poster-v="assets/video/hero-v-poster.webp" muted autoplay playsinline preload="auto" loop>
+      <source src="assets/video/hero-idle.mp4" type="video/mp4">
+    </video>
+  </div>
+
+  <header class="nav">
+    <div class="nav__left">
+      <a class="pill" href="#menu">Меню</a>
+      <a class="nav__link nav__links" href="#menu">Напитки</a>
+      <a class="nav__link nav__links" href="#shops">Кофейни</a>
+    </div>
+    <span class="nav__mark">MIDOV</span>
+    <div class="nav__right">
+      <button class="pill" type="button" id="cart-btn">Корзина <span class="pill__count" id="cart-count">0</span></button>
+    </div>
+  </header>
+
+  <div class="stage">
+    <p class="eyebrow">
+      <span>Владикавказ</span>
+      <span class="eyebrow__sep" aria-hidden="true"></span>
+      <span class="picker">
+        <button class="picker__btn" type="button" id="shop-btn"
+                aria-expanded="false" aria-haspopup="listbox" aria-controls="shop-list">
+          <span id="shop-addr">Революции, 68</span>
+          <svg class="picker__caret" width="9" height="6" viewBox="0 0 9 6" fill="none" aria-hidden="true">
+            <path d="M1 1.5 4.5 4.5 8 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <span class="picker__list" id="shop-list" role="listbox" aria-label="Выберите кофейню" hidden></span>
+      </span>
+      <span class="eyebrow__sep" aria-hidden="true"></span>
+      <span class="status"><span class="status__dot"></span><span id="status-text"></span></span>
+    </p>
+
+    <h1 class="sr-only">MIDOV — кофейня во Владикавказе</h1>
+  </div>
+
+  <div class="footline">
+    <div class="proof">
+      <span class="proof__score" id="proof-score">5,0<span class="proof__star">★</span></span>
+      <span class="proof__text" id="proof-text">78 оценок в 2ГИС.<br>Своя обжарка.</span>
+    </div>
+    <a class="cta" href="#">
+      Собрать заказ
+      <span class="cta__arrow" aria-hidden="true">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+          <path d="M3.5 11.5 11.5 3.5M11.5 3.5H5.2M11.5 3.5v6.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    </a>
+  </div>
+
+</div>
+
+<!-- ═══ Меню на весь экран ══════════════════════════════════════════════
+     Отдельная вкладка меню, о которой просил заказчик. Отдельным файлом её
+     сделать нельзя: демо уходит одним артефактом, второму html там негде
+     лежать. Поэтому это вид: лендинг и меню сменяют друг друга в одном
+     документе, а адрес меняет router.js через history.pushState('#menu') —
+     значит и кнопка «назад» в браузере работает, и ссылку на меню можно
+     переслать.
+
+     Вид стоит сразу за первым экраном намеренно. Гость, пришедший прямо в
+     меню, получает его разметку следом за шапкой, а не в конце документа
+     за лендингом, точками и подвалом.
+
+     Разделы и цены сюда не вписаны: их дорисовывает js/menu-render.js из
+     js/menu.js — это урок T021, вторая копия цен однажды тихо разошлась с
+     первой. Кадры, наоборот, стоят прямо здесь: srcset, sizes и размеры
+     браузер обязан увидеть до запуска скрипта, иначе он не выберет файл под
+     ширину экрана и уронит вёрстку при догрузке (принцип IV, FR-019). Тем
+     же обходом разметки собирается артефакт — кадр, рождённый скриптом, в
+     него бы не попал. -->
+<div class="mv" id="menu-view">
+
+  <header class="mv__bar">
+    <div class="wrap mv__bar-in">
+      <!-- Выход с этого экрана стоит на самом экране, а не только в кнопке
+           браузера: гость мог прийти сюда по ссылке, и позади у него ничего
+           нет. Выходов два и оба ведут на лендинг — «Назад» и знак MIDOV.
+           Стоят они рядом, слева, а не по краям: знак посередине требует
+           одинаковых полей справа и слева, а на 320px три подписи в строку
+           не встают вовсе — корзина уезжала за край на 51px. Слева же они
+           читаются как одна шапка: стрелка, имя, дальше содержимое. -->
+      <div class="mv__home">
+        <button class="pill mv__back" type="button" data-go="site" aria-label="Назад, на главную">
+          <svg class="mv__back-arrow" width="13" height="13" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+            <path d="M12 7.5H3.5M3.5 7.5 7 4M3.5 7.5 7 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="mv__back-text">Назад</span>
+        </button>
+        <button class="mv__mark" type="button" data-go="site" aria-label="MIDOV — вернуться на главную">MIDOV</button>
+      </div>
+      <!-- Счётчик здесь свой, а нажатие уходит кнопке первого экрана:
+           панель заказа подписана на #cart-btn по id, и второй такой id
+           был бы недопустим, а второй обработчик — второй правдой. -->
+      <button class="pill mv__cart" type="button" id="mv-cart-btn">Корзина <span class="pill__count" id="mv-cart-count">0</span></button>
+    </div>
+  </header>
+
+  <div class="wrap mv__intro">
+    <!-- tabindex="-1" ради фокуса: смена вида — это смена страницы, и
+         курсор клавиатуры обязан переехать сюда, а не остаться на кнопке,
+         которой больше нет на экране. -->
+    <h1 class="menu__title" tabindex="-1">Меню</h1>
+
+    <noscript>
+      <p class="menu__noscript">Разделы и цены собираются на странице скриптом. Если он не выполняется, спросите меню по телефону: <a href="tel:+79188278800">8 (918) 827 88 00</a>.</p>
+    </noscript>
+  </div>
+
+  <div class="wrap"><div class="menu__group" data-section="black">
+    <ul class="cards">
+      <li class="card" data-item="espresso"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/espresso-400.webp"
+           srcset="assets/drinks/espresso-400.webp 400w, assets/drinks/espresso-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Эспрессо в белой чашке на блюдце"></span></li>
+      <li class="card" data-item="americano"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/americano-400.webp"
+           srcset="assets/drinks/americano-400.webp 400w, assets/drinks/americano-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Американо в белой чашке на блюдце"></span></li>
+      <li class="card" data-item="filter"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/filter-400.webp"
+           srcset="assets/drinks/filter-400.webp 400w, assets/drinks/filter-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Фильтр в стеклянном стакане"></span></li>
+    </ul>
+  </div></div>
+  <div class="wrap"><div class="menu__group" data-section="milky">
+    <ul class="cards">
+      <li class="card" data-item="cappuccino"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/cappuccino-400.webp"
+           srcset="assets/drinks/cappuccino-400.webp 400w, assets/drinks/cappuccino-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Капучино в белой чашке, с рисунком на пене"></span></li>
+      <li class="card" data-item="latte"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/latte-400.webp"
+           srcset="assets/drinks/latte-400.webp 400w, assets/drinks/latte-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Латте в высоком стакане, слоями"></span></li>
+      <li class="card" data-item="flat-white"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/flat-white-400.webp"
+           srcset="assets/drinks/flat-white-400.webp 400w, assets/drinks/flat-white-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Флэт уайт в белой чашке, с рисунком на пене"></span></li>
+      <li class="card" data-item="raf-cocoa"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/raf-cocoa-400.webp"
+           srcset="assets/drinks/raf-cocoa-400.webp 400w, assets/drinks/raf-cocoa-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Раф какао в высоком стакане, с какао на пене"></span></li>
+    </ul>
+  </div></div>
+  <div class="wrap"><div class="menu__group" data-section="fresh">
+    <ul class="cards">
+      <li class="card" data-item="apple"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/apple-400.webp"
+           srcset="assets/drinks/apple-400.webp 400w, assets/drinks/apple-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Яблоко в высоком стакане"></span></li>
+      <li class="card" data-item="grapefruit"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/grapefruit-400.webp"
+           srcset="assets/drinks/grapefruit-400.webp 400w, assets/drinks/grapefruit-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Грейпфрут в высоком стакане"></span></li>
+      <li class="card" data-item="carrot"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/carrot-400.webp"
+           srcset="assets/drinks/carrot-400.webp 400w, assets/drinks/carrot-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Морковь в высоком стакане"></span></li>
+      <li class="card" data-item="orange"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/orange-400.webp"
+           srcset="assets/drinks/orange-400.webp 400w, assets/drinks/orange-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Апельсин в высоком стакане"></span></li>
+    </ul>
+  </div></div>
+  <div class="wrap"><div class="menu__group" data-section="kids">
+    <ul class="cards">
+      <li class="card" data-item="cocoa-marshmallow"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/cocoa-marshmallow-400.webp"
+           srcset="assets/drinks/cocoa-marshmallow-400.webp 400w, assets/drinks/cocoa-marshmallow-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Какао с маршмеллоу в стеклянной кружке, с маршмеллоу"></span></li>
+      <li class="card" data-item="babyccino"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/babyccino-400.webp"
+           srcset="assets/drinks/babyccino-400.webp 400w, assets/drinks/babyccino-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Бейбичино в маленькой чашке, только молочная пена"></span></li>
+    </ul>
+  </div></div>
+  <div class="wrap"><div class="menu__group" data-section="cold-drinks">
+    <ul class="cards">
+      <li class="card" data-item="hani"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/hani-400.webp"
+           srcset="assets/drinks/hani-400.webp 400w, assets/drinks/hani-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Хани в высоком стакане со льдом"></span></li>
+      <li class="card" data-item="watermelon-raspberry"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/watermelon-raspberry-400.webp"
+           srcset="assets/drinks/watermelon-raspberry-400.webp 400w, assets/drinks/watermelon-raspberry-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Арбуз-малина в высоком стакане со льдом"></span></li>
+      <li class="card" data-item="espresso-tonic"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/espresso-tonic-400.webp"
+           srcset="assets/drinks/espresso-tonic-400.webp 400w, assets/drinks/espresso-tonic-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Эспрессо-тоник в высоком стакане со льдом и пузырьками"></span></li>
+      <li class="card" data-item="apple-lime"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/apple-lime-400.webp"
+           srcset="assets/drinks/apple-lime-400.webp 400w, assets/drinks/apple-lime-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Яблоко-лайм в высоком стакане со льдом"></span></li>
+      <li class="card" data-item="cold-brew"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/cold-brew-400.webp"
+           srcset="assets/drinks/cold-brew-400.webp 400w, assets/drinks/cold-brew-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Cold brew в высоком стакане со льдом"></span></li>
+      <li class="card" data-item="iced-latte"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/iced-latte-400.webp"
+           srcset="assets/drinks/iced-latte-400.webp 400w, assets/drinks/iced-latte-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Айс латте в высоком стакане со льдом, слоями"></span></li>
+      <li class="card" data-item="yug-vostok"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/yug-vostok-400.webp"
+           srcset="assets/drinks/yug-vostok-400.webp 400w, assets/drinks/yug-vostok-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Юг-Восток в высоком стакане со льдом и долькой апельсина"></span></li>
+      <li class="card" data-item="double-m"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/double-m-400.webp"
+           srcset="assets/drinks/double-m-400.webp 400w, assets/drinks/double-m-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Дабл М в высоком стакане со льдом"></span></li>
+      <li class="card" data-item="japanese-story"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/japanese-story-400.webp"
+           srcset="assets/drinks/japanese-story-400.webp 400w, assets/drinks/japanese-story-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Японская история в высоком стакане со льдом, зелёный слой поверх молока"></span></li>
+    </ul>
+  </div></div>
+
+  <div class="wrap"><div class="menu__group" data-section="midov-special">
+    <ul class="cards">
+      <li class="card" data-item="raf-haznidon"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/raf-haznidon-400.webp"
+           srcset="assets/drinks/raf-haznidon-400.webp 400w, assets/drinks/raf-haznidon-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Раф Хазнидон в высоком стакане, розовый, с молочной пеной"></span></li>
+      <li class="card" data-item="latte-canada"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/latte-canada-400.webp"
+           srcset="assets/drinks/latte-canada-400.webp 400w, assets/drinks/latte-canada-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Латте Канада в высоком стакане, слоями"></span></li>
+      <li class="card" data-item="latte-halva"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/latte-halva-400.webp"
+           srcset="assets/drinks/latte-halva-400.webp 400w, assets/drinks/latte-halva-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Латте Халва в высоком стакане, слоями"></span></li>
+      <li class="card" data-item="matcha-cappuccino"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/matcha-cappuccino-400.webp"
+           srcset="assets/drinks/matcha-cappuccino-400.webp 400w, assets/drinks/matcha-cappuccino-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Матча капучино в белой чашке, зелёный, с молочной пеной"></span></li>
+      <li class="card" data-item="peanut-raf"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/peanut-raf-400.webp"
+           srcset="assets/drinks/peanut-raf-400.webp 400w, assets/drinks/peanut-raf-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Арахисовый раф в высоком стакане, с молочной пеной"></span></li>
+    </ul>
+  </div></div>
+  <div class="wrap"><div class="menu__group" data-section="tea">
+    <ul class="cards">
+      <li class="card" data-item="sbiten"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/sbiten-400.webp"
+           srcset="assets/drinks/sbiten-400.webp 400w, assets/drinks/sbiten-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Сбитень в стеклянной кружке, с палочкой корицы"></span></li>
+      <li class="card" data-item="buckwheat-puer-cranberry-honey"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/buckwheat-puer-cranberry-honey-400.webp"
+           srcset="assets/drinks/buckwheat-puer-cranberry-honey-400.webp 400w, assets/drinks/buckwheat-puer-cranberry-honey-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Гречишный пуэр клюква-мёд в стеклянной кружке, с клюквой"></span></li>
+      <li class="card" data-item="pineapple-lime"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/pineapple-lime-400.webp"
+           srcset="assets/drinks/pineapple-lime-400.webp 400w, assets/drinks/pineapple-lime-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Ананас-лайм в стеклянной кружке, с долькой лайма"></span></li>
+      <li class="card" data-item="sea-buckthorn"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/sea-buckthorn-400.webp"
+           srcset="assets/drinks/sea-buckthorn-400.webp 400w, assets/drinks/sea-buckthorn-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Облепиха в стеклянной кружке, с ягодами облепихи"></span></li>
+      <li class="card" data-item="raspberry-ginger"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/raspberry-ginger-400.webp"
+           srcset="assets/drinks/raspberry-ginger-400.webp 400w, assets/drinks/raspberry-ginger-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Малина-имбирь в стеклянной кружке, с малиной и имбирём"></span></li>
+      <li class="card" data-item="nanayi-chai"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/nanayi-chai-400.webp"
+           srcset="assets/drinks/nanayi-chai-400.webp 400w, assets/drinks/nanayi-chai-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Нанайы-цай в стеклянной кружке, с листьями"></span></li>
+      <li class="card" data-item="loose-leaf-classic"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/loose-leaf-classic-400.webp"
+           srcset="assets/drinks/loose-leaf-classic-400.webp 400w, assets/drinks/loose-leaf-classic-800.webp 800w"
+           sizes="(min-width: 1200px) 210px, (min-width: 900px) 23vw, (min-width: 620px) 30vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Листовая классика в стеклянном чайнике, с листьями на дне"></span></li>
+    </ul>
+  </div></div>
+
+  <!-- Честная пометка. Съёмка гостей и залов у кофейни своя, а предметной
+       нет: все 34 кадра напитков — образцы для этого макета. В подвале об
+       этом сказано, но в виде «полное меню» подвал скрыт — а смотрят кадры
+       именно здесь. Строка обязана стоять там, где на них смотрят. -->
+  <div class="wrap">
+    <p class="mv__origin">Фотографии напитков — образцы для этого макета, не съёмка MIDOV. Сама страница — концепт, а не официальный сайт кофейни.</p>
+  </div>
+
+</div>
+
+<!-- ═══ Меню на лендинге ═══════════════════════════════════════════════
+     От полного меню здесь осталось начало: заголовок, четыре напитка из
+     разных разделов и кнопка «Всё меню». Полный список ушёл в отдельный
+     вид — держать его и здесь значило бы заставить гостя дважды пролистать
+     одно и то же на одной странице.
+
+     Раздел сохранил id="menu": на него ведут ссылки из подвала и из пустой
+     корзины, и ломать их незачем. Ссылки с href="#menu" перехватывает
+     router.js и открывает меню видом; без скрипта они просто прокручивают
+     сюда, к приманкам и ценам.
+
+     Два кадра собственной съёмки остались на своих местах и делают ту же
+     работу: зал открывает меню («где вы будете это пить»), фасад закрывает
+     и подводит к разделу точек («куда прийти»). -->
+<section class="menu" id="menu" aria-labelledby="menu-title">
+
+  <div class="wrap menu__intro">
+    <h2 class="menu__title" id="menu-title">Меню</h2>
+
+    <noscript>
+      <p class="menu__noscript">Цены собираются на странице скриптом. Если он не выполняется, спросите меню по телефону: <a href="tel:+79188278800">8 (918) 827 88 00</a>.</p>
+    </noscript>
+  </div>
+
+  <div class="wrap">
+    <!-- Позиции выбраны по одной из разных разделов: по четырём карточкам
+         должно быть видно, что меню шире кофе. Цены в разметку не вписаны —
+         их, как и названия, ставит menu-render.js из тех же данных, что и
+         полное меню. -->
+    <ul class="cards cards--teaser" data-teaser>
+      <li class="card" data-item="latte"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/latte-400.webp"
+           srcset="assets/drinks/latte-400.webp 400w, assets/drinks/latte-800.webp 800w"
+           sizes="(min-width: 1200px) 265px, (min-width: 620px) 23vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Латте в высоком стакане, слоями"></span></li>
+      <li class="card" data-item="espresso-tonic"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/espresso-tonic-400.webp"
+           srcset="assets/drinks/espresso-tonic-400.webp 400w, assets/drinks/espresso-tonic-800.webp 800w"
+           sizes="(min-width: 1200px) 265px, (min-width: 620px) 23vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Эспрессо-тоник в высоком стакане со льдом и пузырьками"></span></li>
+      <li class="card" data-item="raf-haznidon"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/raf-haznidon-400.webp"
+           srcset="assets/drinks/raf-haznidon-400.webp 400w, assets/drinks/raf-haznidon-800.webp 800w"
+           sizes="(min-width: 1200px) 265px, (min-width: 620px) 23vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Раф Хазнидон в высоком стакане, розовый, с молочной пеной"></span></li>
+      <li class="card" data-item="sea-buckthorn"><span class="card__shot"><img class="card__img"
+           src="assets/drinks/sea-buckthorn-400.webp"
+           srcset="assets/drinks/sea-buckthorn-400.webp 400w, assets/drinks/sea-buckthorn-800.webp 800w"
+           sizes="(min-width: 1200px) 265px, (min-width: 620px) 23vw, 45vw"
+           width="400" height="400" loading="lazy" decoding="async"
+           alt="Облепиха в стеклянной кружке, с ягодами облепихи"></span></li>
+    </ul>
+
+    <button class="cta menu__all" type="button" data-go="menu">
+      <span>Всё меню</span>
+      <span class="menu__all-n" data-menu-count></span>
+      <span class="cta__arrow" aria-hidden="true">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+          <path d="M3.5 11.5 11.5 3.5M11.5 3.5H5.2M11.5 3.5v6.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+    </button>
+  </div>
+</section>
+
+<!-- ═══ Шесть точек ═══════════════════════════════════════════════════
+     Карточки стоят в разметке, а не собираются скриптом. Меню собирается,
+     потому что цены имеют право жить только в js/menu.js; здесь причина
+     обратная: адрес кофейни обязан читаться и тогда, когда скрипт не
+     выполнился, — это последнее, ради чего гость возвращается на сайт.
+
+     Всё, что здесь написано, взято из facts.md и совпадает с
+     js/shops-data.js до цифры. Две точки показаны намеренно бедно:
+     часы Морских Пехотинцев источником не подтверждены, а по Колка
+     Кесаева подтверждён только сам адрес с сайта MIDOV — карточки нет
+     ни в 2ГИС, ни в Яндекс Картах. Выдумать «как у соседней точки»
+     нельзя, а увести гостя по чужой ссылке хуже, чем не увести никуда
+     (принцип I). -->
+<section class="shops" id="shops" aria-labelledby="shops-title">
+  <div class="wrap">
+
+    <div class="shops__header">
+      <div class="shops__headline">
+        <h2 class="shops__title" id="shops-title">Куда прийти</h2>
+      </div>
+      <a class="cta shops__phone" href="tel:+79188278800">
+        8&nbsp;(918)&nbsp;827&nbsp;88&nbsp;00
+        <span class="cta__arrow" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <path d="M3.5 11.5 11.5 3.5M11.5 3.5H5.2M11.5 3.5v6.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </a>
+    </div>
+
+    <div class="hairline" aria-hidden="true"></div>
+
+    <div class="shops__grid">
+      <a class="shop" data-shop-id="revolyucii-68" href="https://2gis.ru/vladikavkaz/firm/70000001079906579" target="_blank" rel="noreferrer">
+        <span class="shop__main">
+          <span class="shop__address">Революции, 68</span>
+          <span class="shop__meta">09:00—23:00 · Завтраки целый день</span>
+          <span class="shop__tag">Флагман</span>
+        </span>
+        <span class="shop__side"><span class="proof" aria-label="Рейтинг 5,0, 78 оценок в 2ГИС"><span class="proof__score">5,0<span class="proof__star" aria-hidden="true">★</span></span><span class="proof__text" aria-hidden="true">78 оценок<br>в 2ГИС</span></span><span class="shop__gis" aria-hidden="true">2ГИС ↗</span></span>
+      </a>
+
+      <a class="shop" data-shop-id="gappo-baeva-29" href="https://2gis.ru/vladikavkaz/firm/70000001061595916" target="_blank" rel="noreferrer">
+        <span class="shop__main">
+          <span class="shop__address">Гаппо Баева, 29</span>
+          <span class="shop__meta">08:30—22:00</span>
+        </span>
+        <span class="shop__side"><span class="proof" aria-label="Рейтинг 5,0, 31 оценка в 2ГИС"><span class="proof__score">5,0<span class="proof__star" aria-hidden="true">★</span></span><span class="proof__text" aria-hidden="true">31 оценка<br>в 2ГИС</span></span><span class="shop__gis" aria-hidden="true">2ГИС ↗</span></span>
+      </a>
+
+      <a class="shop" data-shop-id="prospekt-mira-12" href="https://2gis.ru/vladikavkaz/firm/70000001064723327" target="_blank" rel="noreferrer">
+        <span class="shop__main">
+          <span class="shop__address">Пр. Мира, 12</span>
+          <span class="shop__meta">08:30—22:00</span>
+        </span>
+        <span class="shop__side"><span class="proof" aria-label="Рейтинг 4,7, 39 оценок в 2ГИС"><span class="proof__score">4,7<span class="proof__star" aria-hidden="true">★</span></span><span class="proof__text" aria-hidden="true">39 оценок<br>в 2ГИС</span></span><span class="shop__gis" aria-hidden="true">2ГИС ↗</span></span>
+      </a>
+
+      <a class="shop" data-shop-id="gastello-71k3" href="https://2gis.ru/vladikavkaz/firm/70000001098567461" target="_blank" rel="noreferrer">
+        <span class="shop__main">
+          <span class="shop__address">Гастелло, 71 к3</span>
+          <span class="shop__meta">09:00—23:00</span>
+          <span class="shop__tag">Завтраки целый день</span>
+        </span>
+        <span class="shop__side"><span class="proof" aria-label="Рейтинг 4,8, 6 оценок в 2ГИС"><span class="proof__score">4,8<span class="proof__star" aria-hidden="true">★</span></span><span class="proof__text" aria-hidden="true">6 оценок<br>в 2ГИС</span></span><span class="shop__gis" aria-hidden="true">2ГИС ↗</span></span>
+      </a>
+
+      <a class="shop" data-shop-id="morskih-pehotintsev-8a" href="https://2gis.ru/vladikavkaz/firm/70000001114154043" target="_blank" rel="noreferrer">
+        <span class="shop__main">
+          <span class="shop__address">Морских Пехотинцев, 8А</span>
+          <span class="shop__meta">Часы уточняйте по телефону</span>
+        </span>
+        <span class="shop__side"><span class="proof" aria-label="Рейтинг 5,0, 1 оценка в 2ГИС"><span class="proof__score">5,0<span class="proof__star" aria-hidden="true">★</span></span><span class="proof__text" aria-hidden="true">1 оценка<br>в 2ГИС</span></span><span class="shop__gis" aria-hidden="true">2ГИС ↗</span></span>
+      </a>
+
+      <div class="shop" data-shop-id="kolka-kesaeva-176">
+        <span class="shop__main">
+          <span class="shop__address">Колка Кесаева, 176</span>
+          <span class="shop__meta">Часы уточняйте по телефону</span>
+        </span>
+        <span class="shop__side"></span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══ Подвал ════════════════════════════════════════════════════════
+     Подпись автора съёмки обязательна: 678 фотографий выложила сама
+     кофейня, снимал их @pane.ph, и его имя стоит на странице (FR-014).
+     Об исполнителе этого демо здесь нет ни слова и не будет (FR-021). -->
+<footer class="site-footer" aria-label="Подвал сайта">
+  <div class="wrap">
+    <div class="hairline" aria-hidden="true"></div>
+
+    <p class="eyebrow">
+      <span>Владикавказ</span>
+      <span class="eyebrow__sep" aria-hidden="true"></span>
+      <span>COFFEE AND PEOPLE</span>
+    </p>
+
+    <div class="site-footer__main">
+      <strong class="site-footer__mark">MIDOV</strong>
+      <nav class="site-footer__nav" aria-label="Навигация в подвале">
+        <a class="pill" href="#menu">Меню</a>
+        <a class="pill" href="#shops">Кофейни</a>
+      </nav>
+    </div>
+
+    <div class="hairline" aria-hidden="true"></div>
+
+    <div class="site-footer__meta">
+      <div class="site-footer__links">
+        <a class="cta" href="tel:+79188278800">
+          8&nbsp;(918)&nbsp;827&nbsp;88&nbsp;00
+          <span class="cta__arrow" aria-hidden="true">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+              <path d="M3.5 11.5 11.5 3.5M11.5 3.5H5.2M11.5 3.5v6.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </a>
+        <a class="cta" href="https://www.instagram.com/midov_coffee/" target="_blank" rel="noreferrer">
+          Instagram @midov_coffee
+          <span class="cta__arrow" aria-hidden="true">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+              <path d="M3.5 11.5 11.5 3.5M11.5 3.5H5.2M11.5 3.5v6.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </a>
+      </div>
+      <p class="site-footer__credit">Фотографии — @pane.ph</p>
+    </div>
+
+    <!-- Страница выложена на публичный адрес и находится поиском. Значит
+         она обязана сама сказать, что она такое: на ней имя кофейни, её
+         телефон и её адреса, и без этой строки её примут за сайт MIDOV, а
+         по телефону позвонят с чужой витрины. Строка стоит в подвале —
+         последнее, что читают, и единственное место, где её нельзя не
+         заметить, дочитав страницу до конца. -->
+    <p class="site-footer__disclaimer">Концепт, а не официальный сайт MIDOV. Заказ со страницы никуда не уходит. Фотографии напитков — образцы для макета, не съёмка кофейни.</p>
+  </div>
+</footer>
+
+<!-- Живая область одна на оба вида: скрытый вид объявлен display:none,
+     и объявление о добавлении из него не прозвучало бы вовсе. -->
+<p class="sr-only" id="menu-live" role="status" aria-live="polite"></p>
+
+<!-- menu.js и cart.js стоят перед app.js намеренно: app.js читает
+     window.MidovCart синхронно при загрузке, и счётчик в шапке остался бы
+     на нуле, окажись корзина подключена позже. -->
+<script src="js/shops-data.js"></script>
+<script src="js/shops.js"></script>
+<script src="js/menu.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/hero.js"></script>
+<script src="js/app.js"></script>
+<script src="js/menu-render.js"></script>
+<!-- Панель заказа строит свою разметку сама и вешается на #cart-btn,
+     поэтому идёт после шапки; checkout.js встраивает в неё свои виды и
+     обязан идти после неё. -->
+<script src="js/cart-panel.js"></script>
+<script src="js/checkout.js"></script>
+</body>
+</html>

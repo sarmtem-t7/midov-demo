@@ -1,0 +1,1579 @@
+/* Стили секций ниже первого экрана.
+
+   Пусто здесь было не по недосмотру: пока первый экран был всей страницей,
+   все его стили лежали инлайном в index.html, чтобы не добавлять блокирующий
+   запрос ровно перед первым кадром (принцип IV). Меню, корзина, оформление и
+   точки появляются после прокрутки — им лишний запрос уже не вредит, и они
+   живут здесь.
+
+   Своей палитры тут нет намеренно: все цвета — производные от --paper, --ink,
+   --ink-soft, --ochre и --hairline, объявленных в index.html сразу в трёх
+   состояниях темы. Пока ни один цвет не написан числом, тёмная тема работает
+   сама и не может разойтись с первым экраном. */
+
+/* ── Общее ниже сгиба ──────────────────────────────────────
+   .wrap повторяет боковые отступы .hero теми же clamp(): секции ниже сгиба
+   должны стоять по одной вертикали с шапкой, иначе на широком экране видно,
+   что страница собрана из двух разных сеток. */
+.wrap {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding-left:  clamp(16px, 3.2vw, 44px);
+  padding-right: clamp(16px, 3.2vw, 44px);
+}
+
+/* Разделитель-волосок: тот же класс использует разметка точек и подвала. */
+.hairline {
+  height: 1px;
+  background: var(--hairline);
+}
+
+/* ── Два вида одной страницы ───────────────────────────────
+   Заказчик попросил меню отдельной вкладкой. Второго html-файла у демо
+   быть не может — оно уходит одним артефактом, — поэтому вкладка сделана
+   видом: лендинг и меню сменяют друг друга в одном документе, а адрес
+   меняет router.js через history.pushState('#menu').
+
+   Переключает вид один атрибут data-view на <html>, и ставит его router.js
+   ещё в <head>, до разбора <body>. Правило живёт в подключаемом файле, а
+   не в разметке, потому что этот файл тоже блокирует первую отрисовку —
+   вспышки лендинга у гостя, пришедшего сразу по #menu, не будет.
+
+   Без JavaScript атрибута нет вовсе. Тогда виден лендинг с приманками и
+   ценами, а меню на весь экран скрыто: неработающая вкладка не показывает
+   себя пустой. */
+html:not([data-view="menu"]) .mv { display: none; }
+
+html[data-view="menu"] .hero,
+html[data-view="menu"] .menu,
+html[data-view="menu"] .shops,
+html[data-view="menu"] .site-footer { display: none; }
+
+/* ── Меню на весь экран ────────────────────────────────────
+   У вида своя шапка: гость пришёл сюда по ссылке и может не иметь за
+   спиной ни одной страницы, поэтому выход отсюда должен стоять на экране,
+   а не в кнопке браузера. Их два и оба ведут на лендинг — «Назад» и знак
+   MIDOV. */
+.mv {
+  /* Высота шапки нужна двоим: самой шапке и липким заголовкам разделов,
+     которые обязаны останавливаться под ней. Одно число на двоих. */
+  --bar: 56px;
+  position: relative;
+  z-index: 1;
+  padding-bottom: clamp(40px, 6vw, 84px);
+}
+
+.mv__bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  /* Плотная бумага: под шапкой проезжают кадры напитков. */
+  background: var(--paper);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.mv__bar-in {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: var(--bar);
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+/* Оба выхода — стрелка и знак — стоят одной группой слева. Знак посередине
+   требовал бы одинаковых полей по краям, а на 320px их взять негде: три
+   подписи в одну строку не помещаются, и корзина уезжала за край на 51px
+   (принцип III — горизонтальной прокрутки нет с 320px). */
+.mv__home {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* 44px — цель нажатия. В первом экране .pill ниже, но там шапка лежит на
+   кадре и живёт по своим правилам; здесь это основная навигация вида. */
+.mv .pill { min-height: 44px; }
+
+.mv__back-arrow {
+  /* Стрелка не поворачивается и не двигается — она указывает направление,
+     а не приглашает нажать: приглашает вся кнопка. */
+  flex: 0 0 auto;
+}
+
+/* На узком экране у стрелки снимается подпись: имя действия несёт
+   aria-label, и голосом кнопка по-прежнему называется «Назад, на главную».
+   Рядом стоит знак MIDOV — второй выход, уже со словом. */
+@media (max-width: 430px) {
+  .mv__back-text { display: none; }
+  .mv .pill { padding: 0 13px; }
+  /* Кнопка без подписи всё равно обязана оставаться целью в 44px:
+     стрелка шириной 13px давала 41 — на три пикселя меньше нормы. */
+  .mv__back { min-width: 46px; justify-content: center; padding: 0; }
+  .mv__mark { padding: 0 4px; letter-spacing: .22em; text-indent: .22em; }
+}
+
+.mv__mark {
+  min-height: 44px;
+  padding: 0 10px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  /* Тот же знак, что в шапке первого экрана и в подвале: разрежённый
+     Oswald. font-family обязателен — <button> его не наследует. */
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(15px, 1.6vw, 20px);
+  letter-spacing: .3em;
+  text-indent: .3em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.mv__intro {
+  padding-top: clamp(18px, 3vw, 34px);
+  margin-bottom: clamp(16px, 2.4vw, 28px);
+}
+
+/* Заголовок вида мельче, чем на лендинге: там «Меню» открывает раздел
+   среди прочих, здесь оно и так вся страница, и крупный набор отодвинул
+   бы первый ряд карточек за нижний край экрана. */
+.mv .menu__title { font-size: clamp(1.75rem, 5vw, 3rem); }
+
+/* Честная пометка о происхождении кадров — в конце меню, некрупно,
+   отделённая волоском. Не извинение и не сноска мелким шрифтом, которую
+   принято не читать: строка на своём месте, сказанная один раз. */
+.mv__origin {
+  max-width: 56ch;
+  margin: clamp(20px, 3vw, 34px) 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--hairline);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+/* ── Витрина меню ──────────────────────────────────────────
+   Секция сознательно без фона: бумага одна на всю страницу, а границу
+   между первым экраном и меню держит воздух, а не заливка. */
+
+.menu {
+  position: relative;
+  /* z-index нужен: у .hero есть ::after с зерном на z-index 9 внутри
+     собственного контекста наложения, и без явного слоя секция иногда
+     оказывалась под ним на длинных экранах. */
+  z-index: 1;
+  padding-top:    clamp(48px, 8vw, 110px);
+  padding-bottom: clamp(40px, 6vw, 84px);
+}
+
+.menu__intro { margin-bottom: clamp(22px, 3.4vw, 40px); }
+
+.menu__title {
+  margin: clamp(8px, 1.4vw, 16px) 0 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(2rem, 7vw, 4.2rem);
+  line-height: .96;
+  letter-spacing: -.004em;
+  text-transform: uppercase;
+}
+
+.menu__noscript {
+  margin: 14px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+/* ── Раздел меню ───────────────────────────────────────────
+   Заголовок липкий: разделов семь, в COLD DRINKS и TEA по девять и семь
+   позиций, и при прокрутке легко потерять, чьи это цены. */
+
+/* Отступ снизу, а не сверху у соседа: каждый раздел лежит в собственном
+   .wrap, поэтому соседями `.menu__group + .menu__group` они друг другу
+   никогда не были, и это правило молча не работало. */
+.menu__group { margin-bottom: clamp(14px, 2.2vw, 32px); }
+
+.menu__head {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0 7px;
+  margin-bottom: 10px;
+  /* Плотная бумага, а не полупрозрачная: под шапкой проезжают карточки,
+     и любая просвечивающая подложка делает название раздела нечитаемым. */
+  background: var(--paper);
+  border-bottom: 1px solid var(--hairline);
+}
+
+/* В меню на весь экран липкая ещё и шапка вида. Заголовок раздела обязан
+   останавливаться под ней, а не под верхом окна, иначе он на секунду
+   уезжает под кнопки «Назад» и «Корзина». */
+.mv .menu__head { top: var(--bar); }
+
+.menu__section {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(15px, 2.2vw, 22px);
+  line-height: 1.05;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+/* Подпись об объёмах — моноширинными цифрами: иначе «250/350 мл» и
+   «300/400 мл» встают на разную ширину и заголовки дёргаются. */
+.menu__note {
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ── Сетка карточек ────────────────────────────────────────
+   Здесь был список: имя слева, цена справа, волосок между строками. Он
+   решал прошлую задачу — «нужно нормальное меню» вместо панели настроек.
+   Задача сменилась: у каждого напитка появилась фотография, а кадр внутри
+   строки высотой 56px — это иконка, а не фотография. Значит сетка.
+
+   Но не та сетка, что была до списка. Ту заказчик назвал жестью: карточка
+   в скруглённой коробке с подложкой, полосы выбора объёма во всю ширину и
+   чёрная таблетка «В ЗАКАЗ» под ними стоили 250px на позицию и 8456px на
+   34 позиции. Поэтому здесь у карточки нет ни коробки, ни фона, ни рамки,
+   ни тени: на бумаге лежит только кадр, а под ним одна строка текста.
+   Всё, что не фотография, весит ровно столько, сколько нужно, чтобы его
+   прочитать.
+
+   Колонок ровно столько, сколько задано на каждой ширине, а не
+   auto-fill: у auto-fill колонка на 1440 выходила бы 150px и кадр
+   становился бы миниатюрой, а весь смысл этой правки — размер кадра. */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 620px)  { .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px 14px; } }
+@media (min-width: 900px)  { .cards { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 1200px) { .cards { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+
+.card {
+  display: flex;
+  flex-direction: column;
+  /* Без min-width: 0 длинное название растягивает колонку сетки, и
+     раскладка разъезжается вправо — там же и берётся горизонтальная
+     прокрутка на узком экране. */
+  min-width: 0;
+}
+
+/* Вся карточка целиком — кнопка. Отдельной кнопки «в заказ» на ней нет
+   намеренно: у неё нет работы, которой не делал бы кадр, зато есть вес,
+   который спорил бы с фотографией. */
+.card__hit {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  /* font-family обязателен: <button> его не наследует, и без этой строки
+     половина сетки съезжает на системный Arial рядом с Golos Text.
+     На этом уже спотыкались в шапке первого экрана и в списке меню. */
+  font-family: var(--body);
+  color: var(--ink);
+  text-align: left;
+}
+button.card__hit { cursor: pointer; }
+
+.card__shot {
+  position: relative;
+  display: block;
+  /* Квадрат задан и здесь, и атрибутами width/height у самого <img>:
+     рамка держит место до загрузки, атрибуты — до применения стилей. */
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 3px;
+  /* Запасной тон бумаги: пока кадр не догрузился или не догрузится
+     никогда, на его месте остаётся бумага, а не белая дыра и не
+     сломанная иконка. */
+  background: color-mix(in srgb, var(--ink) 7%, var(--paper));
+}
+
+.card__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Тот же тон под самим изображением: у кадра, который ещё
+     декодируется, просвечивать должна бумага. */
+  background: color-mix(in srgb, var(--ink) 7%, var(--paper));
+}
+
+/* Одна строка под кадром: имя слева, цена справа. По базовой линии, а не
+   по центру, — у длинных названий, уходящих в две строки, цена обязана
+   стоять на уровне первой, иначе она съезжает от кадра вниз. */
+.card__body {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  padding-top: 6px;
+}
+
+.card__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 12.5px;
+  line-height: 1.25;
+  /* «Гречишный пуэр клюква-мёд» на 320px переносится по слову;
+     переносить по буквам было бы хуже, чем в две строки. */
+  overflow-wrap: break-word;
+}
+
+/* Описание есть ровно у одной позиции («Листовая классика»), поэтому оно
+   стоит второй строкой под названием, а не отдельной колонкой. */
+.card__desc {
+  display: block;
+  margin-top: 1px;
+  font-size: 10.5px;
+  line-height: 1.3;
+  color: var(--ink-soft);
+}
+
+.card__price {
+  flex: 0 0 auto;
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  /* Табличные цифры: цены стоят правым краем колонки, и пропорциональные
+     единицы ломали бы эту колонку на каждой карточке. */
+  font-variant-numeric: tabular-nums;
+}
+
+/* Знак «+» — единственный намёк, что карточка живая. На мыши он
+   проявляется при наведении, чтобы сетка в покое оставалась чистой. */
+.card__mark {
+  flex: 0 0 auto;
+  width: 11px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+  opacity: 0;
+}
+
+/* На телефоне наведения не существует: там знак виден всегда, но
+   приглушённым — иначе карточка выглядит мёртвой. Проверять это через
+   ширину экрана нельзя, признак именно в устройстве ввода. */
+@media (hover: none) {
+  .card__mark { opacity: .45; }
+}
+
+.card__hit:hover .card__mark,
+.card__hit:focus-visible .card__mark { opacity: 1; }
+
+/* Количество вытесняет «+»: если позиция уже в заказе, важнее показать
+   сколько, чем звать нажать ещё раз. */
+.card__mark--qty {
+  opacity: 1;
+  font-weight: 600;
+  color: var(--ochre);
+}
+
+@media (hover: hover) {
+  .card__hit:hover .card__shot {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--ink) 22%, transparent);
+  }
+}
+
+/* Отклик на добавление. Обязателен: без него нажатие по карточке ничем
+   не отличается от промаха — счётчик в шапке из середины сетки не виден.
+
+   Обводкой кадра, а не движением: подсветка обязана работать и при
+   отключённом движении, поэтому класс красит карточку сам, а @media
+   ниже добавляет только плавность угасания. */
+.card--added .card__shot { box-shadow: 0 0 0 2px var(--ochre); }
+.card--added .card__price { color: var(--ochre); }
+
+/* ── Две цены ──────────────────────────────────────────────
+   Две цены в данных означают два объёма, а не диапазон (contracts/data.md).
+   Поэтому цена и есть кнопка: нажатие сразу кладёт свой объём, и «280/320»
+   физически не может прочитаться как «от и до».
+
+   Обе кнопки лежат на кадре, а не под ним, и причина арифметическая.
+   Полоса цен под названием добавила бы 50px шести карточкам из тридцати
+   четырёх, а высота ряда в сетке равна самой высокой карточке — эти 50px
+   умножились бы на пять рядов из девятнадцати и стоили бы всему меню
+   четверти тысячи пикселей. На кадре они не стоят ничего: напиток снят
+   в середине квадрата, внизу стол и фон.
+
+   Подпись объёма стоит только там, где миллилитры подтверждены источником
+   (MILKY 250/350). У BLACK и TEA их нет, и заглушки «Меньший объём» /
+   «Больший объём» с экрана убраны: на кнопке они выглядят недоделкой. */
+/* Полоса цен переехала из кадра под имя: на снимке она читалась наклейкой.
+   Растягиваем кнопки поровну, чтобы две цены не прыгали по ширине от
+   длины числа. */
+.card__prices {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+.card__prices > * { flex: 1 1 0; }
+
+.pricebtn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  /* 44px — минимальная цель нажатия, и здесь это настоящая высота кнопки,
+     а не расширение невидимым слоем: проверка меряет то, что видит. */
+  min-height: 44px;
+  min-width: 56px;
+  flex: 0 1 auto;
+  padding: 4px 8px;
+  border: 1px solid var(--hairline);
+  border-radius: 5px;
+  /* Плотная бумага, а не полупрозрачная: кнопка лежит на фотографии, и
+     любая просвечивающая подложка делает цену нечитаемой ровно там, где
+     кадр окажется тёмным. */
+  background: var(--paper);
+  font-family: var(--body);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+button.pricebtn { cursor: pointer; }
+
+.pricebtn__vol {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ink-soft);
+}
+
+.pricebtn__rub { white-space: nowrap; }
+
+button.pricebtn:hover {
+  border-color: var(--ink);
+  background: var(--paper);
+}
+
+/* Уже заказанный объём помечен охрой и числом в углу: гость должен видеть,
+   какой из двух он взял, не открывая корзину. */
+.pricebtn--in { border-color: var(--ochre); }
+
+.pricebtn__qty {
+  position: absolute;
+  top: -7px;
+  right: -6px;
+  display: grid;
+  place-items: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--ochre);
+  color: var(--paper);
+  font-size: 10px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Приманки на лендинге ──────────────────────────────────
+   На лендинге от меню остались заголовок, четыре карточки и кнопка «Всё
+   меню». Полный список отсюда убран: он теперь живёт отдельным видом, и
+   держать его в двух местах одной страницы — это заставить гостя дважды
+   пролистать одно и то же. */
+.cards--teaser { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+@media (min-width: 620px) {
+  .cards--teaser { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+.menu__all {
+  margin-top: clamp(18px, 2.6vw, 28px);
+  /* Кнопка, а не ссылка: переход делает router.js, и href="#menu" здесь
+     оставил бы браузеру право прыгнуть к якорю раньше скрипта. */
+  cursor: pointer;
+}
+
+.menu__all-n {
+  font-weight: 500;
+  letter-spacing: .08em;
+  text-transform: none;
+  color: var(--ink-soft);
+}
+.menu__all:hover .menu__all-n { color: inherit; }
+
+/* ── Три кадра собственной съёмки ──────────────────────────
+   Кадров было семь — по одному после каждого раздела, механически. Ни один
+   не был связан с соседним списком: собака на веранде под KIDS, фасад под
+   TEA. Осталось три, и у каждого своё место по смыслу: зал открывает меню
+   («где вы будете это пить»), витрина даёт передышку ровно посередине
+   длинного списка, фасад закрывает и подводит к разделу точек («куда
+   прийти»).
+
+   Главная поправка — размер. Раньше кадр растягивался во всю ширину и
+   кадрировался в ленту: от снимка оставалась случайная полоса — торсы,
+   спинки стульев, край стола. Теперь рамка повторяет соотношение самого
+   файла (горизонтальные 1600×1067 — это 3:2, вертикальные 1280×1600 — 4:5),
+   и cover не режет ничего. Ширина ограничена, чтобы вертикальный кадр не
+   занимал экран целиком: ярус из photos.md ограничивает именно видимый
+   размер. */
+
+.shot {
+  margin-left: auto;
+  margin-right: auto;
+  margin-top:    clamp(26px, 4.4vw, 56px);
+  margin-bottom: clamp(26px, 4.4vw, 56px);
+}
+
+.shot--h { max-width: 780px; }
+.shot--v { max-width: 520px; }
+
+.shot__frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  /* Запасной тон бумаги: пока кадр не догрузился или не догрузится никогда,
+     на его месте остаётся бумага, а не белая дыра и не сломанная иконка. */
+  background: color-mix(in srgb, var(--ink) 7%, var(--paper));
+  /* Потолок на низком окне: 4:5 при ширине 460 — это 575px, и на ноутбуке
+     с окном в 640px высоты кадр съел бы весь экран. Здесь рамка становится
+     ниже файла, и вот тогда object-position ниже начинает работать. */
+  max-height: 78svh;
+}
+
+.shot--h .shot__frame { aspect-ratio: 3 / 2; }
+.shot--v .shot__frame { aspect-ratio: 4 / 5; }
+
+.shot__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Тот же тон под самим изображением: у прозрачного WebP и у кадра,
+     который ещё декодируется, просвечивать должна бумага. */
+  background: color-mix(in srgb, var(--ink) 7%, var(--paper));
+}
+
+/* Точка кадрирования выбрана по каждому снимку отдельно, глазами. Работает
+   она только когда max-height выше сделал рамку ниже файла, но именно там
+   и решается, что уедет за край. */
+
+/* Зал: сюжет — столы, дерево и окна в верхних двух третях, ниже пустой пол. */
+.shot--hall   .shot__img { object-position: 50% 36%; }
+
+/* Витрина: надпись MIDOV COFFEE и гости идут серединой кадра, внизу
+   пустые столики. */
+.shot--window .shot__img { object-position: 50% 44%; }
+
+/* Фасад: вывеска и окна в верхней половине, ниже мостовая. */
+.shot--facade .shot__img { object-position: 50% 42%; }
+
+/* Подписи у кадров нет намеренно: сказать под фотографией, какая это точка
+   из шести, мы не можем — по кадру это не проверяется, а непроверенное на
+   страницу не идёт (принцип I). Смысл кадра несёт alt. */
+
+/* ── Служебное ─────────────────────────────────────────────
+   Живая область для голосового вывода: без неё добавление в заказ слышно
+   только как изменение цифры в шапке, то есть не слышно никак. */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── Движение ──────────────────────────────────────────────
+   Все переходы собраны здесь и целиком отключаются вместе с движением:
+   объявлять transition снаружи и гасить его внутри @media пришлось бы
+   в каждом правиле, и однажды одно из них забылось бы (принцип VI). */
+@media (prefers-reduced-motion: no-preference) {
+  .card__mark { transition: opacity .18s ease, color .18s ease; }
+  .card__price { transition: color .18s ease; }
+  .pricebtn    { transition: border-color .2s ease, background-color .2s ease; }
+
+  /* Обводка добавленной карточки только угасает плавно: включается она
+     мгновенно и классом, поэтому отклик остаётся видимым и без движения. */
+  .card__shot { transition: box-shadow .12s ease; }
+}
+
+/* ── Шесть точек ───────────────────────────────────────────
+   Карточка точки повторяет карточку позиции меню намеренно: подложка,
+   волосок и радиус те же. Гость уже научился читать этот прямоугольник
+   в меню — второй язык на одной странице ему ни к чему. */
+
+.shops {
+  position: relative;
+  z-index: 1;
+  padding-top:    clamp(40px, 6vw, 90px);
+  padding-bottom: clamp(36px, 5vw, 70px);
+}
+
+.shops__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: clamp(16px, 4vw, 48px);
+  margin-bottom: clamp(18px, 2.6vw, 30px);
+}
+.shops__headline { min-width: 0; }
+.shops__header .eyebrow { margin: 0; }
+
+.shops__title {
+  margin: clamp(8px, 1.4vw, 16px) 0 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(2rem, 7vw, 4.2rem);
+  line-height: .96;
+  letter-spacing: -.004em;
+  text-transform: uppercase;
+}
+
+/* На узком экране телефон встаёт под заголовок и растягивается на всю
+   ширину: это главная кнопка секции, и жать по ней надо не целясь. */
+@media (max-width: 680px) {
+  .shops__header { flex-direction: column; align-items: stretch; }
+  .shops__phone { justify-content: space-between; }
+}
+
+.shops__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(10px, 1.4vw, 16px);
+  margin-top: clamp(20px, 3vw, 32px);
+}
+/* auto-fill, как в меню: при шести карточках auto-fit растянул бы
+   последний ряд на всю ширину, и колонки разошлись бы с меню. */
+@media (min-width: 620px) {
+  .shops__grid { grid-template-columns: repeat(auto-fill, minmax(276px, 1fr)); }
+}
+
+.shop-card {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 16px;
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--ink) 3.5%, var(--paper));
+}
+
+.shop-card__topline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 34px;
+}
+.shop-card__label { margin: 0; letter-spacing: .16em; }
+
+/* Рейтинг в карточке — тот же .proof, что в первом экране, только тише:
+   там он единственное число на экране, здесь их шесть подряд. */
+.shop-card .proof { flex: 0 0 auto; gap: 9px; }
+.shop-card .proof__score { font-size: 23px; }
+.shop-card .proof__text { max-width: 11ch; font-size: 10px; line-height: 1.25; }
+
+.shop-card__address {
+  margin: 2px 0 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(18px, 4.2vw, 23px);
+  line-height: 1.05;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  overflow-wrap: break-word;
+}
+
+.shop-card__hours {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+/* Часы, которых нет: строка не выдумывает время и не рисует прочерк, а
+   говорит, что делать (принцип I). Тон тише подтверждённых часов. */
+.shop-card__hours--unknown { font-size: 12px; opacity: .8; }
+
+.shop-card__note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ochre);
+}
+
+/* Ссылка прижата к низу: карточки в ряду одной высоты, и без этого
+   кнопки соседей стояли бы на разной. Тот же приём, что у .dish__add. */
+.shop-card__link {
+  align-self: flex-start;
+  margin-top: auto;
+  min-height: 48px;
+  padding: 0 9px 0 18px;
+  gap: 12px;
+  font-size: 10.5px;
+  letter-spacing: .14em;
+}
+.shop-card__link .cta__arrow { width: 30px; height: 30px; }
+
+/* ── Подвал ────────────────────────────────────────────────
+   Подпись @pane.ph здесь обязательна (FR-014). Об исполнителе демо
+   на странице нет ни слова (FR-021) — и в этих стилях места под него
+   тоже не заведено. */
+
+.site-footer {
+  position: relative;
+  z-index: 1;
+  padding-bottom: clamp(28px, 4vw, 52px);
+}
+
+.site-footer .eyebrow { margin: clamp(18px, 2.6vw, 30px) 0 clamp(12px, 1.8vw, 20px); }
+
+.site-footer__main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: clamp(18px, 2.8vw, 32px);
+}
+
+/* Знак набран крупно и разрежен так же, как .nav__mark в шапке: подвал
+   закрывает страницу тем же голосом, каким она открылась. */
+.site-footer__mark {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(2.6rem, 12vw, 6rem);
+  line-height: .86;
+  letter-spacing: .12em;
+  text-indent: .12em;
+  text-transform: uppercase;
+}
+
+.site-footer__nav,
+.site-footer__links {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.site-footer__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: clamp(14px, 2.4vw, 28px);
+  margin-top: clamp(14px, 2.2vw, 24px);
+}
+
+.site-footer__meta .cta {
+  min-height: 48px;
+  padding: 0 9px 0 18px;
+  gap: 12px;
+  font-size: 10.5px;
+  letter-spacing: .14em;
+}
+.site-footer__meta .cta__arrow { width: 30px; height: 30px; }
+
+.site-footer__credit {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+/* Оговорка о природе страницы. Набрана тем же кеглем, что и подпись к
+   фотографиям выше, и стоит под тем же волоском: это служебная строка, а
+   не предупреждение в рамке. Прятать её мельче остального было бы тем же
+   обманом, только другим шрифтом. */
+.site-footer__disclaimer {
+  max-width: 64ch;
+  margin: clamp(16px, 2.4vw, 24px) 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--hairline);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+/* ── Панель заказа ─────────────────────────────────────────
+   Одна панель на три вида: заказ, оформление, подтверждение. Сбоку на
+   широком экране, снизу на узком — это не вкус, а разная механика: на
+   телефоне палец живёт у нижнего края, на десктопе заказ должен стоять
+   рядом с меню, а не поверх него.
+
+   Разметку панели строит js/cart-panel.js, поэтому здесь только вид. */
+
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 90;              /* выше шапки первого экрана (z-index 20) */
+  /* Пока панель выезжает, она стоит за краем окна. Прятать вылет обязан
+     контейнер: иначе на долю секунды появляется горизонтальная
+     прокрутка ровно на ширину панели (FR-016). */
+  overflow: hidden;
+}
+
+.sheet__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(9, 7, 5, .52);
+  opacity: 0;
+}
+.sheet--open .sheet__scrim { opacity: 1; }
+
+.sheet__panel {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  /* Фон плотный, а не полупрозрачный с размытием: под панелью проезжает
+     кофейный кадр и семь разделов меню, а backdrop-filter без ускорителя
+     не рисуется вовсе — и тогда цены читались бы поверх фотографии. */
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 -20px 60px -26px rgba(0, 0, 0, .55);
+
+  /* Узкий экран: снизу, до 88% высоты. Остаток окна сверху оставлен
+     нарочно — из-под панели видно страницу, и она не выглядит уходом
+     на другой экран. */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: min(88svh, 780px);
+  border-top: 1px solid var(--hairline);
+  border-radius: 22px 22px 0 0;
+  translate: 0 100%;
+}
+.sheet--open .sheet__panel { translate: 0 0; }
+
+@media (min-width: 720px) {
+  .sheet__panel {
+    left: auto;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(440px, 100%);
+    max-height: none;
+    border-top: 0;
+    border-left: 1px solid var(--hairline);
+    border-radius: 0;
+    translate: 100% 0;
+  }
+  .sheet--open .sheet__panel { translate: 0 0; }
+}
+
+/* Вид занимает панель целиком и сам делится на шапку, тело и подвал:
+   так прокручивается только тело, а кнопка оформления остаётся на месте
+   при любой длине заказа (пограничный случай «очень длинный заказ»). */
+.sheet__view,
+.sheet__form {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.sheet__head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid var(--hairline);
+}
+.sheet__headline { min-width: 0; }
+.sheet__head .eyebrow { margin: 0 0 7px; flex-wrap: wrap; }
+
+.sheet__title {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(22px, 6vw, 30px);
+  line-height: 1;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  overflow-wrap: break-word;
+}
+
+/* font-family обязателен: <button> его не наследует. На этом уже
+   спотыкались в шапке первого экрана и на кнопке «в заказ». */
+.sheet__close,
+.sheet__back,
+.sheet__clear,
+.order-line__drop,
+.stepper__btn,
+.orderbar,
+.field__input { font-family: var(--body); }
+
+.sheet__close {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: -6px -6px 0 0;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+.sheet__close:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+.sheet__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;               /* цель нажатия */
+  margin: -8px 0 0 -12px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.sheet__back:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 8%, transparent); }
+
+.sheet__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  /* Прокрутка не «протекает» на страницу под затемнением: иначе на
+     телефоне доскроллил заказ до конца — и поехало меню под панелью. */
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 18px 20px;
+}
+
+/* Честное предупреждение о хранилище и честная подпись «это витрина» —
+   один и тот же вид: ни то, ни другое не ошибка и не тревога. */
+.sheet__note {
+  margin: 0;
+  /* Полоса слева убрана — тот же заезженный приём, что и у предупреждения
+     об аллергии. Сноска отделяется линейкой сверху и мелким кеглем. */
+  padding: 12px 0 0;
+  border-top: 1px solid var(--hairline);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+/* ── Строка заказа ───────────────────────────────────────── */
+
+.order {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.order-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 12px;
+  align-items: start;
+  padding: 13px 14px;
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--ink) 3.5%, var(--paper));
+}
+
+.order-line__text { grid-column: 1; grid-row: 1; min-width: 0; }
+
+.order-line__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.25;
+  overflow-wrap: break-word;
+}
+
+.order-line__meta {
+  margin: 3px 0 0;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.order-line__drop {
+  grid-column: 2;
+  grid-row: 1;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: -10px -10px 0 0;        /* цель 44px, а видимого веса не набирает */
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.order-line__drop:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 9%, transparent); }
+
+.order-line__controls {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.order-line__sum {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 17px;
+  letter-spacing: .02em;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+}
+
+.stepper__btn {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;                   /* цель нажатия */
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font-size: 17px;
+  line-height: 1;
+  color: var(--ink);
+  cursor: pointer;
+}
+.stepper__btn:hover:not(:disabled) { background: color-mix(in srgb, var(--ink) 9%, transparent); }
+/* На потолке «плюс» гаснет, а не упирается в стену молча. */
+.stepper__btn:disabled { color: var(--ink-soft); opacity: .38; cursor: default; }
+
+.stepper__num {
+  min-width: 28px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Пустое состояние ──────────────────────────────────────
+   Не пустой прямоугольник и не «корзина пуста»: строка объясняет, что
+   делать дальше, и рядом стоит кнопка, которая туда и ведёт. */
+
+.sheet__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 10px 0 6px;
+}
+.sheet__empty-title {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 21px;
+  line-height: 1.05;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+.sheet__empty-text {
+  margin: 0;
+  max-width: 36ch;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+.sheet__empty-go { margin-top: 4px; }
+
+/* ── Подвал панели ─────────────────────────────────────────
+   Не прокручивается вместе с заказом: сколько бы строк ни набралось,
+   сумма и кнопка стоят на месте. */
+
+.sheet__foot {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 18px;
+  /* Полоса жестов iPhone: без запаса кнопка оформления оказывается
+     ровно под ней. */
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--hairline);
+  background: var(--paper);
+}
+
+.sheet__sum {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.sheet__sum-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.sheet__sum-value {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(24px, 6vw, 31px);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.sheet__go { width: 100%; justify-content: space-between; }
+
+.sheet__clear {
+  align-self: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  background: transparent;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.sheet__clear:hover { color: var(--ink); }
+
+/* .cta в первом экране всегда ссылка, поэтому объявлен там без
+   font-family и с полупрозрачным фоном под кофейный кадр. В панели он
+   кнопка на плотной бумаге — обе разницы снимаются здесь. */
+button.cta { font-family: var(--body); }
+.sheet .cta {
+  background: var(--ink);
+  color: var(--paper);
+  backdrop-filter: none;
+}
+.sheet .cta .cta__arrow { background: var(--paper); color: var(--ink); }
+.sheet .cta:hover { background: transparent; color: var(--ink); }
+.sheet .cta:hover .cta__arrow { background: var(--ink); color: var(--paper); }
+
+/* ── Плавающая кнопка заказа ───────────────────────────────
+   Появляется, только когда в заказе что-то есть, а шапка первого экрана
+   уже уехала вверх. Иначе из середины меню открыть заказ нечем. */
+
+.orderbar {
+  position: fixed;
+  z-index: 60;
+  right: clamp(12px, 3.2vw, 40px);
+  bottom: 14px;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 18px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--paper);
+  background: var(--ink);
+  box-shadow: 0 16px 36px -16px rgba(0, 0, 0, .6);
+  cursor: pointer;
+}
+.orderbar__count {
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+}
+.orderbar__sum { letter-spacing: .06em; font-variant-numeric: tabular-nums; }
+
+/* ── Поля оформления ───────────────────────────────────────
+   Ошибка стоит у поля, а не общим блоком наверху: общий блок читают
+   один раз, а потом ищут, к чему он относился. */
+
+.field { display: flex; flex-direction: column; gap: 7px; }
+
+.field__label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.field__hint {
+  margin: -2px 0 0;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--ink-soft);
+}
+
+.field__input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--ink) 3.5%, var(--paper));
+  color: var(--ink);
+  /* Ровно 16px и не меньше: Safari на iPhone приближает страницу при
+     фокусе в поле с более мелким шрифтом, и панель уезжает за край. */
+  font-size: 16px;
+}
+.field__input::placeholder { color: var(--ink-soft); opacity: .7; }
+
+/* Ошибка обозначена не только цветом: у поля меняется рамка, а у
+   подписи стоит охряная черта слева. Сам текст остаётся цветом чернил —
+   охра на бумаге не набирает нужного контраста для 12px (принцип VI). */
+.field--bad .field__input { border-color: var(--ochre); }
+.field__error {
+  margin: 0;
+  padding-left: 9px;
+  border-left: 2px solid var(--ochre);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+/* Поле времени появляется только по выбору «ко времени» и с отступом:
+   без сдвига оно читается как третья кнопка в группе. */
+.field--sub { margin-top: 2px; padding-left: 12px; border-left: 1px solid var(--hairline); }
+
+/* ── Выбор из списка ───────────────────────────────────────
+   Настоящие radio, как у объёмов в меню: стрелки, один Tab на группу
+   и правильное озвучивание достаются даром. */
+
+.choice { display: flex; flex-direction: column; gap: 7px; }
+.choice--row { flex-direction: row; flex-wrap: wrap; }
+.choice--row .choice__opt { flex: 1 1 150px; }
+
+.choice__opt { position: relative; display: flex; margin: 0; }
+
+/* Не display:none и не hidden: и то и другое вынуло бы input из порядка
+   фокуса, а с ним и выбор с клавиатуры. */
+.choice__input {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.choice__face {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 48px;               /* цель нажатия */
+  padding: 8px 14px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  font-size: 13.5px;
+  line-height: 1.3;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.choice__name { min-width: 0; font-weight: 500; color: var(--ink); overflow-wrap: break-word; }
+.choice__meta { flex: 0 0 auto; font-size: 11.5px; font-variant-numeric: tabular-nums; }
+
+.choice__input:checked + .choice__face {
+  border-color: var(--ink);
+  color: var(--ink);
+  background: color-mix(in srgb, var(--ochre) 16%, transparent);
+}
+/* Фокус переносится на видимую часть: сам input размером в пиксель. */
+.choice__input:focus-visible + .choice__face { outline: 2px solid var(--ochre); outline-offset: 3px; }
+
+/* ── Подтверждение ─────────────────────────────────────────
+   Чек собран из тех же карточек, что заказ и точки: третьего языка на
+   странице заводить не за чем. */
+
+.ticket {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px 16px;
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--ink) 3.5%, var(--paper));
+}
+.ticket .eyebrow { margin: 0; }
+
+.ticket__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.ticket__row > span { color: var(--ink-soft); }
+.ticket__row > strong { font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+
+.ticket__no {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1;
+  letter-spacing: .1em;
+}
+
+.ticket__lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ticket__line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.ticket__line-name { min-width: 0; overflow-wrap: break-word; }
+.ticket__line-sum { flex: 0 0 auto; color: var(--ink-soft); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.ticket__total {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 25px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.ticket__addr {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(19px, 5vw, 25px);
+  line-height: 1.05;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  overflow-wrap: break-word;
+}
+
+.ticket__meta {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.ticket__map {
+  align-self: flex-start;
+  margin-top: 4px;
+  min-height: 48px;
+  padding: 0 9px 0 18px;
+  gap: 12px;
+  font-size: 10.5px;
+  letter-spacing: .14em;
+}
+.ticket__map .cta__arrow { width: 30px; height: 30px; }
+
+/* ── Движение панели ───────────────────────────────────────
+   Выезд и затемнение объявлены только внутри no-preference: при
+   reduce панель обязана появляться готовой, а не «быстрее» — и
+   js/cart-panel.js на это же и рассчитывает, снимая hidden без
+   ожидания transitionend. */
+@media (prefers-reduced-motion: no-preference) {
+  .sheet__scrim  { transition: opacity .34s ease; }
+  .sheet__panel  { transition: translate .34s cubic-bezier(.22, 1, .36, 1); }
+  .sheet__close,
+  .sheet__back,
+  .sheet__clear,
+  .order-line__drop,
+  .stepper__btn  { transition: background-color .2s ease, color .2s ease, border-color .2s ease; }
+  .choice__face  { transition: border-color .2s ease, background-color .2s ease, color .2s ease; }
+  .field__input  { transition: border-color .2s ease; }
+  .shop-card     { transition: border-color .25s ease; }
+  .shop-card:hover { border-color: color-mix(in srgb, var(--ink) 32%, transparent); }
+  .orderbar      { animation: orderbar-in .3s cubic-bezier(.22, 1, .36, 1) both; }
+  @keyframes orderbar-in {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: none; }
+  }
+}
+
+/* ── Правки под чужие правила первого экрана ───────────────
+   Оба правила ниже — не вкус, а следствие того, что .pill и .eyebrow
+   объявлены в разметке первого экрана и рассчитаны на него одного. */
+
+/* .pill в шапке ростом 40px — ниже цели нажатия. Первый экран по границам
+   задачи не правится, но в подвале те же таблетки должны быть достижимы
+   пальцем (принцип VI). */
+.site-footer .pill { min-height: 48px; }
+
+/* В подзаголовке первого экрана разделитель между адресом и статусом на
+   узком экране прячется правилом :nth-last-child(2). В подвале и в секции
+   точек соседи другие, и правило съедает нужный разделитель — возвращаем
+   его поимённо. */
+.shops .eyebrow > .eyebrow__sep,
+.site-footer .eyebrow > .eyebrow__sep { display: block; }
+
+/* У парной карточки имя и цены — две строки, а не одна: в общем ряду
+   полоса цен отжимала имя, и «Американо» ломалось на «Америк / ано». */
+.card--pair .card__body {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+}
+
+/* Кадр держит квадрат жёстко. Без этого ряд с одной карточкой растягивал
+   картинку по высоте, и «Фильтр» оказывался выше соседей по сетке. */
+.card__shot { aspect-ratio: 1 / 1; }
+.card__img  { width: 100%; height: 100%; object-fit: cover; display: block; }
+.card { align-self: start; }
+
+/* Фон съёмки и фон страницы почти совпадают, поэтому у части кадров край
+   растворялся: у эспрессо верхняя половина сливалась со страницей, и
+   квадратный снимок читался приплюснутым, а сетка — рваной. Волосяная
+   рамка возвращает кадру границу, ничего не утяжеляя. */
+.card__shot {
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+}
+
+
+/* Вступление меню было в две колонки: заголовок слева, пояснение справа.
+   Сначала сняли пояснение и счётную строку, потом предупреждение об
+   аллергии — правую колонку заполнить стало нечем, и сетка вместе с ней
+   потеряла смысл. Осталось одно имя раздела, ему хватает потока. */
+
+/* ── Свёрнутый выбор кофейни в оформлении ──────────────────────
+   Шесть точек занимали почти весь экран телефона, и поля имени с
+   телефоном уезжали под сгиб. Видна одна строка — выбранная кофейня,
+   остальные раскрываются по нажатию. */
+.choice-fold { border: 1px solid var(--hairline); border-radius: 14px; }
+.choice-fold__head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  min-height: 52px; padding: 0 16px;
+  font-family: var(--body); font-size: 15px; font-weight: 500;
+  color: var(--ink); cursor: pointer; list-style: none;
+}
+.choice-fold__head::-webkit-details-marker { display: none; }
+.choice-fold__hint {
+  font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ochre);
+}
+.choice-fold[open] .choice-fold__hint { color: var(--ink-soft); }
+.choice-fold .choice { padding: 4px; border-top: 1px solid var(--hairline); }
+
+/* ── Точки списком, а не карточками ────────────────────────────
+   Шесть коробок по 400px ради трёх строк давали на телефоне больше двух
+   тысяч пикселей на одни адреса. И у каждой висела своя большая кнопка
+   «Открыть в 2ГИС» — шесть одинаковых пилюль подряд.
+
+   Теперь строка: адрес и часы слева, рейтинг справа, вся строка — ссылка
+   на 2ГИС. Метка осталась только там, где что-то сообщает: «Флагман»,
+   «Завтраки целый день». «Кофейня» не сообщала ничего. */
+.shop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 76px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--hairline);
+  color: inherit;
+  text-decoration: none;
+}
+/* Рамки сверху нет: над списком уже стоит своя линейка раздела,
+   и вторая рядом читается как ошибка вёрстки. */
+.shop:last-of-type { border-bottom: 0; }
+
+.shop__main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.shop__address {
+  font-family: var(--display);
+  font-size: clamp(17px, 2.2vw, 21px);
+  text-transform: uppercase;
+  letter-spacing: .01em;
+}
+.shop__meta { font-size: 13px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.shop__note { color: var(--ink-soft); }
+.shop__tag {
+  align-self: start;
+  margin-top: 2px;
+  font-size: 10px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ochre);
+}
+
+.shop__side { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+.shop__side .proof__score { font-size: clamp(20px, 2.6vw, 26px); }
+.shop__side .proof__text { font-size: 10.5px; line-height: 1.3; }
+.shop__gis {
+  font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-soft); white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .shop { transition: background-color .2s ease; }
+}
+a.shop:hover { background: color-mix(in srgb, var(--ink) 4%, transparent); }
+
+/* На узком экране рейтинг с подписью «оценок в 2ГИС» съедает половину
+   строки — оставляем цифру, подпись уходит в озвучивание. */
+@media (max-width: 520px) {
+  .shop__side .proof__text { display: none; }
+  .shop__gis { display: none; }
+}

@@ -1,0 +1,5 @@
+# Страница выложена, чтобы её было видно в поиске. Ничего не закрываем.
+User-agent: *
+Allow: /
+
+Sitemap: https://sarmtem-t7.github.io/midov-demo/sitemap.xml
