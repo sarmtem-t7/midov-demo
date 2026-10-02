@@ -94,6 +94,20 @@ body {
   isolation: isolate;
 }
 
+/* Первый экран светлый в любой теме. Ролик снят на светлом фоне, и
+   засветка под текстом сверху и снизу должна быть ему в тон. В тёмной
+   теме она брала тёмную бумагу страницы и ложилась на кадр чёрными
+   полосами. Ниже первого экрана страница идёт в теме гостя. */
+.hero {
+  --paper:    #EEECEC;
+  --ink:      #16130F;
+  --ink-soft: #6B5A47;
+  --ochre:    #C08A2C;
+  --hairline: rgba(22, 19, 15, .16);
+  background: var(--paper);
+  color: var(--ink);
+}
+
 /* ── Сцена ───────────────────────────────────────────────
    Ролик снят на холодном сером фоне, а страница кремовая.
    Умножение на цвет бумаги сажает белое видео ровно в тон
@@ -135,39 +149,10 @@ body {
 
 
 
-/* Засветка бумагой сверху и снизу. Кадр занят почти целиком,
-   и без неё шапка с заголовком тонут в кофе. Уменьшать сцену
-   нельзя — в ней вся суть, поэтому отвоёвываем полосы светом.
-
-   Полосы доведены до строк, которые на них стоят. Прежние держали
-   контраст, пока внизу кадра оставался спокойный фон; на нынешнем
-   ролике под строку рейтинга приходит светлый всплеск, и она пропадала:
-   1,77 на светлой теме и ровно 1,00 на тёмной при норме 4,5 — то есть
-   цвет текста в цвет кофе. Строка адреса давала 2,00 и 2,20.
-
-   На узком экране это уже исправлено (см. медиазапрос ниже), там те же
-   цифры вышли за 5. Здесь — то же самое лекарство: солнце садится ниже,
-   а середина кадра, где и происходит всплеск, остаётся нетронутой. */
-.hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  background:
-    linear-gradient(to bottom,
-      var(--paper) 0%,
-      var(--paper) 15%,
-      color-mix(in srgb, var(--paper) 74%, transparent) 21%,
-      color-mix(in srgb, var(--paper) 28%, transparent) 30%,
-      transparent 39%),
-    linear-gradient(to top,
-      var(--paper) 0%,
-      var(--paper) 11%,
-      color-mix(in srgb, var(--paper) 62%, transparent) 18%,
-      color-mix(in srgb, var(--paper) 24%, transparent) 26%,
-      transparent 34%);
-}
+/* Засветки сверху и снизу здесь больше нет: ролик идёт на весь экран.
+   Она держала контраст текста, но читалась как поля — две полосы бумаги
+   поверх кадра. Текст теперь держится сам (см. «Текст поверх кадра»
+   ниже). */
 
 /* Бумажное зерно поверх всего. */
 .hero::after {
@@ -307,6 +292,29 @@ body {
 .cta:hover { background: var(--ink); color: var(--paper); }
 .cta:hover .cta__arrow { background: var(--paper); color: var(--ink); transform: rotate(45deg); }
 
+/* ── Текст поверх кадра ──────────────────────────────────────
+   Кадр доходит до самых краёв: внизу в начале всплеска лужа кофе,
+   наверху в петле корона и зёрна. Мелкий текст на нём падал до 1,0–3,3
+   при норме 4,5. Ни полос, ни плашек: букву отделяет от кадра мягкий
+   ореол цвета бумаги. На светлом фоне его не видно вовсе, на кофе он
+   даёт каждой букве свой светлый край.
+
+   Только внутри .hero: те же классы стоят в меню, в карточках кофеен
+   и в подвале, где под ними ровная бумага. Кнопкам ореол не нужен —
+   у них своя заливка или обводка. */
+.hero .nav__link,
+.hero .nav__mark,
+.hero .eyebrow,
+.hero .proof {
+  text-shadow:
+    0 0 1px var(--paper), 0 0 1px var(--paper), 0 0 2px var(--paper),
+    0 0 2px var(--paper), 0 0 4px var(--paper), 0 0 8px var(--paper),
+    0 0 16px var(--paper);
+}
+.hero .nav__link,
+.hero .eyebrow,
+.hero .proof__text { color: var(--ink); font-weight: 600; }
+
 /* ── Появление ───────────────────────────────────────────── */
 
 .js .hero:not(.anim) .type__inner { transform: translateY(106%); }
@@ -341,42 +349,6 @@ body {
      забирала молочная лужа, а надпись на стакане уезжала под нижнюю
      строку с рейтингом. */
   .scene__video { object-position: center 44%; }
-
-  /* Строка рейтинга получает свою подложку — ровно тем же приёмом, каким
-     держится кнопка заказа. Без неё текст лежит прямо на всплеске, и
-     контраст падает до 1,80:1 при норме 4,5. Усиливать засветку дальше
-     нельзя: она вымоет сам всплеск, ради которого экран и сделан. */
-  .proof {
-    padding: 10px 14px;
-    border-radius: 16px;
-    /* Плотная, а не полупрозрачная: сквозь 82% всплеск всё равно
-       просвечивал и держал контраст на 3,16 вместо 4,5. */
-    background: var(--paper);
-  }
-
-  /* Вертикальный ролик доходит до самого низа кадра, и нижняя строка легла
-     прямо на всплеск: контраст упал до 1,80:1 при норме 4,5. Прежней
-     засветки хватало, когда внизу оставался чистый фон. Усиливаем её
-     на узком экране — ровно настолько, чтобы текст читался, не пряча
-     сам всплеск. */
-  .hero::before {
-    background:
-      /* Верхняя засветка доведена до места, где стоит строка адреса.
-         Прежней хватало на светлой теме и не хватало на тёмной: ролик
-         яркий, текст тоже светлый, и на полупрозрачной подложке
-         контраст падал до 2,39 при норме 4,5. */
-      linear-gradient(to bottom,
-        var(--paper) 0%,
-        var(--paper) 13%,
-        color-mix(in srgb, var(--paper) 82%, transparent) 20%,
-        color-mix(in srgb, var(--paper) 34%, transparent) 30%,
-        transparent 42%),
-      linear-gradient(to top,
-        var(--paper) 0%,
-        color-mix(in srgb, var(--paper) 92%, transparent) 12%,
-        color-mix(in srgb, var(--paper) 62%, transparent) 22%,
-        transparent 34%);
-  }
 
   .footline { flex-direction: column; align-items: stretch; gap: 14px; }
   .cta { justify-content: space-between; padding-right: 11px; }
@@ -542,8 +514,10 @@ body {
            data-poster-v="assets/video/hero-v-poster.webp" muted autoplay playsinline preload="auto">
       <source src="assets/video/hero-splash.mp4" data-src-v="assets/video/hero-loop-v.mp4" type="video/mp4">
     </video>
+    <!-- Петля сама не качается и сама не запускается: её грузит hero.js
+         после всплеска, чтобы два файла не делили канал пополам. -->
     <video class="scene__video scene__video--idle" poster="assets/video/hero-idle-poster.webp"
-           data-poster-v="assets/video/hero-v-poster.webp" muted autoplay playsinline preload="auto" loop>
+           data-poster-v="assets/video/hero-v-poster.webp" muted playsinline preload="none" loop>
       <source src="assets/video/hero-idle.mp4" type="video/mp4">
     </video>
   </div>
