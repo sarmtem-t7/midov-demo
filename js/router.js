@@ -205,6 +205,30 @@
       if (where === 'menu') toMenu(); else toSite();
     });
 
+    /* Остальные ссылки на место той же страницы — «Кофейни» в шапке и
+       в подвале — браузер исполнял прыжком: экран мгновенно подменялся
+       другим, и непонятно было, куда перенесло. Теперь страница едет к
+       разделу. Адрес меняется так же, как при прыжке, — ссылку на раздел
+       можно переслать, а «назад» вернёт наверх. Гостю, который просил
+       меньше движения, — прыжок, как и раньше. */
+    const REDUCED = matchMedia('(prefers-reduced-motion: reduce)');
+    document.addEventListener('click', (e) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const link = e.target.closest('a[href^="#"]');
+      if (!link) return;
+      const href = link.getAttribute('href');
+      if (href === '#' || href === HASH) return;
+      const target = document.getElementById(decodeURIComponent(href.slice(1)));
+      // Цель скрыта или её нет — пусть браузер разбирается сам.
+      if (!target || !target.getClientRects().length) return;
+      e.preventDefault();
+      /* Адрес — до прокрутки: при новой записи браузер запоминает за
+         старой текущее положение, и «назад» вернёт именно туда. После
+         мгновенной прокрутки запомнилось бы уже место раздела. */
+      if (location.hash !== href) history.pushState({ view: root.dataset.view }, '', href);
+      target.scrollIntoView({ behavior: REDUCED.matches ? 'auto' : 'smooth', block: 'start' });
+    });
+
     /* Корзину открывает та же кнопка первого экрана: панель подписана на
        #cart-btn по id, и второй id на странице был бы недопустим, а второй
        обработчик — второй правдой о том, что значит «открыть корзину». */

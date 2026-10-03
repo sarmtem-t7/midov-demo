@@ -319,6 +319,9 @@ body {
 .hero .nav__link,
 .hero .eyebrow,
 .hero .proof__text { color: var(--ink); font-weight: 600; }
+/* Адрес в строке — кнопка выбора кофейни, а кнопкам браузер сбрасывает
+   тень текста. Без этой строки ореол обходил ровно адрес. */
+.hero .picker__btn { text-shadow: inherit; }
 
 /* ── Появление ───────────────────────────────────────────── */
 
@@ -530,7 +533,6 @@ body {
   <header class="nav">
     <div class="nav__left">
       <a class="pill" href="#menu">Меню</a>
-      <a class="nav__link nav__links" href="#menu">Напитки</a>
       <a class="nav__link nav__links" href="#shops">Кофейни</a>
     </div>
     <span class="nav__mark">MIDOV</span>
