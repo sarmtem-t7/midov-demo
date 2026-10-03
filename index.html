@@ -31,8 +31,13 @@
 
 <!-- Постер первого кадра грузим раньше всего: он появляется на экране
      до того, как доиграет хоть один кадр видео, и решает, увидит гость
-     кофе или белый прямоугольник. -->
-<link rel="preload" as="image" href="assets/video/hero-splash-poster.webp">
+     кофе или белый прямоугольник.
+
+     Это буквально первый кадр всплеска. Здесь стояла собранная
+     композиция, и пока всплеск качался, гость видел готовый стакан, а
+     затем ролик откатывался к капле молока. Теперь ожидание выглядит
+     как начало сцены, и старт ролика продолжает кадр без скачка. -->
+<link rel="preload" as="image" href="assets/video/hero-splash-first.webp">
 
 <!-- Стили первого экрана — здесь, внутри разметки, а не отдельным файлом.
      Первый экран и есть вся страница на этом шаге, поэтому «некритических»
@@ -510,7 +515,7 @@ body {
 <div class="hero">
 
   <div class="scene scene--back" aria-hidden="true">
-    <video class="scene__video scene__video--splash" poster="assets/video/hero-splash-poster.webp"
+    <video class="scene__video scene__video--splash" poster="assets/video/hero-splash-first.webp"
            data-poster-v="assets/video/hero-v-poster.webp" muted autoplay playsinline preload="auto">
       <source src="assets/video/hero-splash.mp4" data-src-v="assets/video/hero-loop-v.mp4" type="video/mp4">
     </video>
